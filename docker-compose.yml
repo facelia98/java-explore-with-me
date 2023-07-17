@@ -2,7 +2,6 @@ version: '3.1'
 services:
   stats-server:
     build: stats/stats-server
-    image: stats-image
     container_name: stats-container
     ports:
       - "9090:9090"
@@ -14,10 +13,13 @@ services:
     container_name: stats-db-postgres
     ports:
       - "6543:5432"
+    environment:
+      - POSTGRES_DB=stats-db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
 
   ewm-service:
     build: main
-    image: main-image
     container_name: main-container
     ports:
       - "8080:8080"
