@@ -8,6 +8,7 @@ import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.server.mapper.HitMapper;
 import ru.practicum.server.repository.StatsRepository;
 
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,10 +21,14 @@ public class StatsService {
 
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, Boolean unique, List<String> uris) {
         log.info("GET ViewStat request received to endpoint [/stats]");
-        List<ViewStatsDto> viewStatsList = (uris == null || uris.isEmpty()) ?
-                statsRepository.findHitsByCreatedBetween(start, end) :
-                statsRepository.findHitsByCreatedBetweenAndUriIn(start, end, uris);
-        return viewStatsList;
+        if (end.isBefore(start) || start.isAfter(end)) {
+            throw new ValidationException("Incoming date is invalid");
+        }
+        return (uris == null || uris.isEmpty()) ?
+                unique ? statsRepository.findHitsByCreatedBetweenUnique(start, end) :
+                        statsRepository.findHitsByCreatedBetween(start, end) :
+                unique ? statsRepository.findHitsByCreatedBetweenAndUriInUnique(start, end, uris) :
+                        statsRepository.findHitsByCreatedBetweenAndUriIn(start, end, uris);
     }
 
     public void create(EndpointHitDto endpointHitDto) {
