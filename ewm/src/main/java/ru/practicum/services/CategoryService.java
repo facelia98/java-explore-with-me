@@ -8,7 +8,6 @@ import ru.practicum.dto.CategoryDto;
 import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.mappers.CategoryMapper;
-import ru.practicum.models.Category;
 import ru.practicum.repositories.CategoryRepository;
 
 import java.util.List;

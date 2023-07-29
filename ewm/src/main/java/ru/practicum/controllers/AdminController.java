@@ -15,14 +15,11 @@ import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
 import ru.practicum.dto.updates.UpdateEventAdminRequest;
-import ru.practicum.enums.Status;
-import ru.practicum.models.Compilation;
 import ru.practicum.services.CategoryService;
 import ru.practicum.services.CompilationService;
 import ru.practicum.services.EventService;
 import ru.practicum.services.UserService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -52,7 +49,7 @@ public class AdminController {
 
     @PatchMapping("/categories/{catId}")
     public CategoryDto updateCategory(@RequestParam(name = "catId") Long id,
-                               @RequestBody CategoryDto dto) {
+                                      @RequestBody CategoryDto dto) {
         return categoryService.updateById(id, dto);
     }
 

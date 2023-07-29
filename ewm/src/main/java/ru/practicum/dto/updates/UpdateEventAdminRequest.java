@@ -2,7 +2,6 @@ package ru.practicum.dto.updates;
 
 
 import lombok.*;
-import ru.practicum.dto.CategoryDto;
 import ru.practicum.enums.EventState;
 import ru.practicum.models.Location;
 

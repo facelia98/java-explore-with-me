@@ -1,7 +1,6 @@
 package ru.practicum.models;
 
 import lombok.*;
-import ru.practicum.enums.EventState;
 import ru.practicum.enums.Status;
 
 import java.util.List;

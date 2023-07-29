@@ -2,17 +2,14 @@ package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.enums.SortMethod;
 import ru.practicum.services.EventService;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,7 +20,7 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
-    @GetMapping // Получение событий с возможностью фильтрации
+    @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
                                          @RequestParam(required = false) List<Long> categoryIds,
                                          @RequestParam(required = false) Boolean paid,
@@ -36,7 +33,7 @@ public class EventController {
         return eventService.getEvents(text, categoryIds, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
     }
 
-    @GetMapping("/{id}") // Получение подробной информации об опубликованном событии по его идентификатору
+    @GetMapping("/{id}")
     public EventFullDto getEventById(@PathVariable Long id) {
         return eventService.getById(id);
     }

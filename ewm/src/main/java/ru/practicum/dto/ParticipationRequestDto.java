@@ -1,7 +1,6 @@
 package ru.practicum.dto;
 
 import lombok.*;
-import ru.practicum.enums.EventState;
 import ru.practicum.enums.Status;
 
 import java.time.LocalDateTime;

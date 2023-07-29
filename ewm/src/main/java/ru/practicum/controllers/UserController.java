@@ -63,8 +63,8 @@ public class UserController {
 
     @PatchMapping("/{userId}/events/{eventId}/requests")
     public EventRequestStatusUpdateResult requestStatusUpdate(@RequestParam(name = "userId") Long userId,
-                                                             @RequestParam(name = "eventId") Long eventId,
-                                                             EventRequestStatusUpdateRequest request) {
+                                                              @RequestParam(name = "eventId") Long eventId,
+                                                              EventRequestStatusUpdateRequest request) {
         return requestService.requestStatusUpdate(userId, eventId, request);
     }
 
