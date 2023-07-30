@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS categories, users, locations, events, requests, compilations, compilation_event;
+DROP TABLE IF EXISTS categories, users, locations, events, requests, compilations, compilation_event CASCADE;
 
 CREATE TABLE IF NOT EXISTS categories
 (
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS events
     state              VARCHAR(10),
     title              VARCHAR(1000)   NOT NULL,
     views              INT DEFAULT 0,
-    CONSTRAINT fk_category_to_event FOREIGN KEY (category_id) REFERENCES categories (id),
+    CONSTRAINT fk_categories_to_event FOREIGN KEY (category_id) REFERENCES categories (id),
     CONSTRAINT fk_location_to_event FOREIGN KEY (location_id) REFERENCES locations (id),
     CONSTRAINT fk_initiator_to_event FOREIGN KEY (initiator_id) REFERENCES users (id)
 );

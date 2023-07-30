@@ -38,7 +38,7 @@ public class CategoryService {
     }
 
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
-        if (categoryRepository.getCategoryByName(categoryDto.getName()) != null) {
+        if (categoryRepository.findByName(categoryDto.getName()) != null) {
             log.error("Duplicate category name!");
             throw new Conflict("Duplicate category name!");
         }
@@ -55,7 +55,7 @@ public class CategoryService {
 
     public CategoryDto updateById(Long id, CategoryDto dto) {
         if (dto.getName() != null) {
-            if (categoryRepository.getCategoryByName(dto.getName()) != null) {
+            if (categoryRepository.findByName(dto.getName()) != null) {
                 log.error("Duplicate category name!");
                 throw new Conflict("Duplicate category name!");
             }
