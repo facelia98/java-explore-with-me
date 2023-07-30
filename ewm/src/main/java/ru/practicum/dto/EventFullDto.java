@@ -1,10 +1,8 @@
 package ru.practicum.dto;
 
 import lombok.*;
-import ru.practicum.models.Location;
 import ru.practicum.enums.EventState;
-
-import java.time.LocalDateTime;
+import ru.practicum.models.Location;
 
 @Getter
 @Setter

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
-import ru.practicum.enums.EventState;
 import ru.practicum.models.Location;
 
 import java.time.LocalDateTime;
