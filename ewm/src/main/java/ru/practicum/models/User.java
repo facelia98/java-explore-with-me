@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 
 @Entity
 @Table(name = "users")
@@ -19,5 +20,6 @@ public class User {
     private Long id;
 
     private String name;
+    @Email
     private String email;
 }

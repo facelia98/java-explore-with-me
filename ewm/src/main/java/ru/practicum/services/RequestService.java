@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.enums.EventState;
 import ru.practicum.enums.Status;
+import ru.practicum.exceptions.Conflict;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.mappers.RequestMapper;
 import ru.practicum.models.*;
@@ -50,7 +51,7 @@ public class RequestService {
     public List<ParticipationRequestDto> getParticipationRequests(Long userId) {
         return requestsRepository.findAllByRequesterId(userId)
                 .stream()
-                .map(participationRequest -> RequestMapper.toParticipationRequestDto(participationRequest))
+                .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
@@ -63,20 +64,22 @@ public class RequestService {
 
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
         if (requestsRepository.findByEventIdAndRequesterId(eventId, userId) != null) {
-            throw new ValidationException("Duplicate exception");
+            throw new Conflict("Duplicate participation request");
         }
         User user = userRepository.getById(userId);
         Event event = eventRepository.getById(eventId);
 
         if (userId.equals(event.getInitiator().getId())) {
-            throw new ValidationException("Initiator couldn't send request");
+            throw new Conflict("Initiator couldn't send request");
         }
         if (!event.getEventState().equals(EventState.PUBLISHED)) {
-            throw new ValidationException("Unpublished event");
+            throw new Conflict("Unpublished event");
         }
-        if (event.getParticipantLimit() <= requestsRepository
-                .countParticipationByEventIdAndStatus(eventId, Status.CONFIRMED)) {
-            throw new ValidationException("Limit");
+        if (event.getParticipantLimit() != 0L) {
+            if (event.getParticipantLimit() <= requestsRepository
+                    .countParticipationByEventIdAndStatus(eventId, Status.CONFIRMED)) {
+                throw new ValidationException("Limit");
+            }
         }
 
         ParticipationRequest request = new ParticipationRequest();
@@ -84,7 +87,7 @@ public class RequestService {
         request.setRequester(user);
         request.setEvent(event);
 
-        if (Boolean.TRUE.equals(event.getRequestModeration())) {
+        if (!event.getRequestModeration()) { // не
             request.setStatus(Status.PENDING);
         } else {
             request.setStatus(Status.CONFIRMED);

@@ -2,6 +2,7 @@ package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -38,19 +39,21 @@ public class AdminController {
     private final CompilationService compilationService;
 
     @PostMapping("/categories")
-    public CategoryDto addNewCategory(@RequestBody NewCategoryDto dto) {
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public CategoryDto addNewCategory(@RequestBody @Valid NewCategoryDto dto) {
         return categoryService.addNewCategory(dto);
     }
 
     @DeleteMapping("/categories/{catId}")
-    public void deleteCategory(@RequestParam(name = "catId") Long id) {
-        categoryService.deleteById(id);
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable Long catId) {
+        categoryService.deleteById(catId);
     }
 
     @PatchMapping("/categories/{catId}")
-    public CategoryDto updateCategory(@RequestParam(name = "catId") Long id,
-                                      @RequestBody CategoryDto dto) {
-        return categoryService.updateById(id, dto);
+    public CategoryDto updateCategory(@PathVariable Long catId,
+                                      @RequestBody @Valid CategoryDto dto) {
+        return categoryService.updateById(catId, dto);
     }
 
     @GetMapping("/events")
@@ -64,9 +67,9 @@ public class AdminController {
         return eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
-    @PatchMapping("/{eventId}")
+    @PatchMapping("/events/{eventId}")
     EventFullDto update(@PathVariable Long eventId,
-                        @Validated @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+                        @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         return eventService.updateEventByAdmin(eventId, updateEventAdminRequest);
     }
 
@@ -102,7 +105,7 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public CompilationDto updateCategory(@PathVariable Long compId, @RequestBody UpdateCompilationRequest compilationUpdateDto) {
+    public CompilationDto updateCategory(@PathVariable Long compId, @RequestBody @Valid UpdateCompilationRequest compilationUpdateDto) {
         return compilationService.updateCompilation(compId, compilationUpdateDto);
     }
 }

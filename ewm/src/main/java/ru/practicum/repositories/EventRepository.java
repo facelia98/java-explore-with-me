@@ -7,26 +7,29 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.enums.EventState;
 import ru.practicum.models.Event;
+import ru.practicum.models.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
-    List<Event> findAllByInitiator(Long userId, PageRequest pageRequest);
+    List<Event> findAllByInitiatorId(Long userId, PageRequest pageRequest);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE e.id IN :events " +
             "ORDER BY e.id")
     List<Event> findEventsByIds(List<Long> events);
 
-    Event findByInitiatorAndId(Long userId, Long id);
+    Event findByInitiatorAndId(User user, Long id);
+
+    List<Event> findByCategoryId(Long categoryId);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE e.eventDate BETWEEN :start AND :end " +
             "AND ((:users) IS NULL OR e.initiator.id IN :users) " +
             "AND ((:states) IS NULL OR e.eventState IN :states) " +
             "AND ((:categories) IS NULL OR e.category.id IN :categories)")
-    List<Event> findAllForAdmin(List<Long> users, List<String> states, List<Long> categories,
+    List<Event> findAllForAdmin(List<Long> users, List<EventState> states, List<Long> categories,
                                 LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     @Query("SELECT e FROM Event AS e " +

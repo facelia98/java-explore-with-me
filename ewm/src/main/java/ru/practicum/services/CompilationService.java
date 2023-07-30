@@ -27,7 +27,7 @@ public class CompilationService {
 
     public List<CompilationDto> get(Integer from, Integer size) {
         return compilationRepository.findAll(PageRequest.of(from, size)).get()
-                .map(compilation -> CompilationMapper.toCompilationDto(compilation))
+                .map(CompilationMapper::toCompilationDto)
                 .collect(Collectors.toList());
     }
 
@@ -48,7 +48,7 @@ public class CompilationService {
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest compilationUpdateDto) {
         Compilation compilationToUpdate = compilationRepository.getById(compId);
 
-        if (compilationToUpdate.getEvents() != null) {
+        if (compilationUpdateDto.getEvents() != null) {
             List<Event> events = new ArrayList<>();
             if (compilationUpdateDto.getEvents().size() != 0) {
                 events = eventRepository.findEventsByIds(compilationUpdateDto.getEvents());
@@ -63,10 +63,7 @@ public class CompilationService {
 
     public CompilationDto saveCompilation(NewCompilationDto compilationCreateDto) {
         Compilation compilation = CompilationMapper.toCompilation(compilationCreateDto);
-        List<Event> events = eventRepository.findEventsByIds(compilation.getEvents()
-                .stream()
-                .map(event -> event.getId())
-                .collect(Collectors.toList()));
+        List<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
         compilation.setEvents(events);
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }

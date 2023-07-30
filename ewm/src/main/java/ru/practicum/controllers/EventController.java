@@ -2,6 +2,7 @@ package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventFullDto;
@@ -21,7 +22,7 @@ public class EventController {
     private final EventService eventService;
 
     @GetMapping
-    public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
+    public Page<EventShortDto> getEvents(@RequestParam(required = false) String text,
                                          @RequestParam(required = false) List<Long> categoryIds,
                                          @RequestParam(required = false) Boolean paid,
                                          @RequestParam(required = false) String rangeStart,
