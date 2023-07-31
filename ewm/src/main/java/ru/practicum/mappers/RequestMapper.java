@@ -1,7 +1,6 @@
 package ru.practicum.mappers;
 
 import ru.practicum.dto.ParticipationRequestDto;
-import ru.practicum.enums.Status;
 import ru.practicum.models.ParticipationRequest;
 
 public class RequestMapper {

@@ -3,7 +3,6 @@ package ru.practicum.mappers;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewEventDto;
-import ru.practicum.enums.EventState;
 import ru.practicum.models.Category;
 import ru.practicum.models.Event;
 import ru.practicum.models.Location;
