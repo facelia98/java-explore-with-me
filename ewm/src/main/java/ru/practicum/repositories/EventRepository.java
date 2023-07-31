@@ -1,6 +1,5 @@
 package ru.practicum.repositories;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,5 +36,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND ((:categoryIds) IS NULL OR e.category.id IN :categoryIds) " +
             "AND e.paid = :paid " +
             "AND e.eventState IN :state")
-    Page<Event> searchEvents(String text, List<Long> categoryIds, Boolean paid, String state, Pageable pageable);
+    List<Event> searchEvents(String text, List<Long> categoryIds, Boolean paid, String state, Pageable pageable);
 }

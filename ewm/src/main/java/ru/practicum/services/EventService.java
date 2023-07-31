@@ -2,10 +2,7 @@ package ru.practicum.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EventFullDto;
@@ -167,15 +164,15 @@ public class EventService {
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
-    public Page<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
+    public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
                                              LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
         List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, rangeStart, rangeEnd, PageRequest.of(from / size, size));
-        return new PageImpl<>(tmp.stream().map(EventMapper::toEventFullDto)
-                .collect(Collectors.toList()), Pageable.ofSize(10), tmp.size());
+        return tmp.stream().map(EventMapper::toEventFullDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Page<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String rangeStart,
+    public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String rangeStart,
                                          String rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
         if (rangeStart != null && rangeEnd != null) {
             if (LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -220,7 +217,7 @@ public class EventService {
                     throw new ValidationException("EventService: Сортировка возможна только по просмотрам или дате события.");
             }
         }
-        return new PageImpl<>(events, Pageable.ofSize(10), events.size());
+        return events;
     }
 
     private EventShortDto setConfirmedRequests(EventShortDto eventDto) {
