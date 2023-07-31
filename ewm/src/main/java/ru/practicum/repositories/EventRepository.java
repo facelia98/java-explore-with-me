@@ -5,7 +5,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import ru.practicum.enums.EventState;
 import ru.practicum.models.Event;
 import ru.practicum.models.User;
 
@@ -29,7 +28,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND ((:users) IS NULL OR e.initiator.id IN :users) " +
             "AND ((:states) IS NULL OR e.eventState IN :states) " +
             "AND ((:categories) IS NULL OR e.category.id IN :categories)")
-    List<Event> findAllForAdmin(List<Long> users, List<EventState> states, List<Long> categories,
+    List<Event> findAllForAdmin(List<Long> users, List<String> states, List<Long> categories,
                                 LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     @Query("SELECT e FROM Event AS e " +
@@ -38,5 +37,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND ((:categoryIds) IS NULL OR e.category.id IN :categoryIds) " +
             "AND e.paid = :paid " +
             "AND e.eventState IN :state")
-    Page<Event> searchEvents(String text, List<Long> categoryIds, Boolean paid, EventState state, Pageable pageable);
+    Page<Event> searchEvents(String text, List<Long> categoryIds, Boolean paid, String state, Pageable pageable);
 }

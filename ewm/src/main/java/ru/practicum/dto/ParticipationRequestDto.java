@@ -2,7 +2,6 @@ package ru.practicum.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.enums.Status;
 
 import java.time.LocalDateTime;
 
@@ -17,5 +16,5 @@ public class ParticipationRequestDto {
     private LocalDateTime created;
     private Long event;
     private Long requester;
-    private Status status;
+    private String status;
 }

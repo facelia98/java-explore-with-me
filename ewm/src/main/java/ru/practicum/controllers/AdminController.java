@@ -2,6 +2,7 @@ package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -56,7 +57,7 @@ public class AdminController {
     }
 
     @GetMapping("/events")
-    public List<EventFullDto> getEventsAdmin(@RequestParam(name = "users", required = false) List<Long> users,
+    public Page<EventFullDto> getEventsAdmin(@RequestParam(name = "users", required = false) List<Long> users,
                                              @RequestParam(name = "states", required = false) List<String> states,
                                              @RequestParam(name = "categories", required = false) List<Long> categories,
                                              @RequestParam(name = "rangeStart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,

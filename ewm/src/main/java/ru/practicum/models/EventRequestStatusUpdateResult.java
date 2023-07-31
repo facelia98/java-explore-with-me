@@ -2,6 +2,7 @@ package ru.practicum.models;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -10,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequestStatusUpdateResult {
-    private List<ParticipationRequest> confirmedRequests;
-    private List<ParticipationRequest> rejectedRequests;
+    private List<Long> confirmedRequests = new ArrayList<>();
+    private List<Long> rejectedRequests = new ArrayList<>();
 }

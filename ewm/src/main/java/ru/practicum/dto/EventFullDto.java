@@ -1,7 +1,6 @@
 package ru.practicum.dto;
 
 import lombok.*;
-import ru.practicum.enums.EventState;
 import ru.practicum.models.Location;
 
 @Getter
@@ -13,7 +12,6 @@ public class EventFullDto {
     private Long id;
     private String annotation;
     private CategoryDto category;
-    private Long confirmedRequests;
     private String createdOn;
     private String description;
     private String eventDate;
@@ -23,7 +21,8 @@ public class EventFullDto {
     private Long participantLimit;
     private String publishedOn;
     private Boolean requestModeration;
-    private EventState state;
+    private String state;
     private String title;
     private Long views;
+    private Long confirmedRequests;
 }

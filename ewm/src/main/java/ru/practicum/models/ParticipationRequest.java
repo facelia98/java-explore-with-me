@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.enums.Status;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -26,5 +25,5 @@ public class ParticipationRequest {
     @ManyToOne
     @JoinColumn(name = "requester_id")
     private User requester;
-    private Status status;
+    private String status;
 }

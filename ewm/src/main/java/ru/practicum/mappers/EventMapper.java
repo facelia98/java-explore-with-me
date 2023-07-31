@@ -46,7 +46,7 @@ public class EventMapper {
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(LocalDateTime.now())
-                .eventState(EventState.PENDING)
+                .eventState("PENDING")
                 .requestModeration(event.getRequestModeration())
                 .title(event.getTitle())
                 .views(event.getViews())

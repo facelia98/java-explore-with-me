@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.enums.EventState;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -42,7 +41,8 @@ public class Event {
     private Long participantLimit;
     private LocalDateTime publishedOn;
     private Boolean requestModeration;
-    private EventState eventState;
+    @Column(name = "state")
+    private String eventState;
     @Column(columnDefinition = "text")
     private String title;
     private Long views;

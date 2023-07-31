@@ -13,7 +13,6 @@ import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewEventDto;
 import ru.practicum.dto.updates.UpdateEventAdminRequest;
 import ru.practicum.dto.updates.UpdateEventUserRequest;
-import ru.practicum.enums.EventState;
 import ru.practicum.exceptions.Conflict;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
@@ -27,7 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.enums.EventState.*;
 import static ru.practicum.enums.Status.CONFIRMED;
 
 @Service
@@ -60,7 +58,7 @@ public class EventService {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
         }
-        if (eventRepository.getById(id).getEventState() != PUBLISHED) {
+        if (!eventRepository.getById(id).getEventState().equals("PUBLISHED")) {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
         }
@@ -85,11 +83,13 @@ public class EventService {
         if (dto.getPaid() == null) dto.setPaid(false);
         if (dto.getParticipantLimit() == null) dto.setParticipantLimit(0L);
         if (dto.getRequestModeration() == null) dto.setRequestModeration(true);
-        return EventMapper.toEventFullDto(eventRepository
+        Event returned = eventRepository
                 .save(EventMapper.toEvent(dto,
                         categoryRepository.getById(dto.getCategory()),
                         userRepository.getById(userId),
-                        locationRepository.save(dto.getLocation()))));
+                        locationRepository.save(dto.getLocation())));
+        EventFullDto full = EventMapper.toEventFullDto(returned);
+        return full;
     }
 
     public EventFullDto updateEvent(Long eventId, Long userId, UpdateEventUserRequest request) {
@@ -98,7 +98,7 @@ public class EventService {
             throw new NotFoundException("Event not found for id = " + eventId);
         }
         Event event = eventRepository.getById(eventId);
-        if (event.getEventState() == PUBLISHED) {
+        if (event.getEventState().equals("PUBLISHED")) {
             log.error("Current event was published");
             throw new Conflict("Current event was published");
         }
@@ -120,9 +120,9 @@ public class EventService {
 
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals("SEND_TO_REVIEW")) {
-                event.setEventState(PENDING);
+                event.setEventState("PENDING");
             } else if (request.getStateAction().equals("CANCEL_REVIEW")) {
-                event.setEventState(CANCELED);
+                event.setEventState("CANCELED");
             }
         }
         return EventMapper.toEventFullDto(eventRepository.save(event));
@@ -135,7 +135,7 @@ public class EventService {
             throw new NotFoundException("Event not found for id = " + eventId);
         }
         Event event = eventRepository.getById(eventId);
-        if (request.getStateAction() != null && event.getEventState() != PENDING) {
+        if (request.getStateAction() != null && !event.getEventState().equals("PENDING")) {
             log.error("Event state is not PENDING");
             throw new Conflict("Event state is not PENDING");
         }
@@ -158,26 +158,20 @@ public class EventService {
         if (request.getParticipantLimit() != null) event.setParticipantLimit(request.getParticipantLimit());
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals("PUBLISH_EVENT")) {
-                event.setEventState(PUBLISHED);
+                event.setEventState("PUBLISHED");
             } else if (request.getStateAction().equals("REJECT_EVENT")) {
-                event.setEventState(CANCELED);
+                event.setEventState("CANCELED");
             }
         }
 
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
-    public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
+    public Page<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
                                              LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
-        if (states == null) {
-            return eventRepository.findAllForAdmin(users, null, categories, rangeStart, rangeEnd, PageRequest.of(from / size, size))
-                    .stream().map(EventMapper::toEventFullDto)
-                    .collect(Collectors.toList());
-        }
-        return eventRepository.findAllForAdmin(users,
-                        states.stream().map(EventState::valueOf).collect(Collectors.toList()), categories, rangeStart, rangeEnd, PageRequest.of(from / size, size))
-                .stream().map(EventMapper::toEventFullDto)
-                .collect(Collectors.toList());
+        List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, rangeStart, rangeEnd, PageRequest.of(from / size, size));
+        return new PageImpl<>(tmp.stream().map(EventMapper::toEventFullDto)
+                .collect(Collectors.toList()), Pageable.ofSize(10), tmp.size());
     }
 
     @Transactional(readOnly = true)
@@ -190,7 +184,7 @@ public class EventService {
                 throw new ValidationException("End-date is before start-date!");
             }
         }
-        List<EventShortDto> events = eventRepository.searchEvents(text, categoryIds, paid, PUBLISHED,
+        List<EventShortDto> events = eventRepository.searchEvents(text, categoryIds, paid, "PUBLISHED",
                         PageRequest.of(from / size, size))
                 .stream()
                 .filter(event -> rangeStart != null ?
@@ -229,15 +223,9 @@ public class EventService {
         return new PageImpl<>(events, Pageable.ofSize(10), events.size());
     }
 
-    private EventFullDto setConfirmedRequests(EventFullDto eventDto) {
-        eventDto.setConfirmedRequests(requestsRepository.countParticipationByEventIdAndStatus(eventDto.getId(),
-                CONFIRMED));
-        return eventDto;
-    }
-
     private EventShortDto setConfirmedRequests(EventShortDto eventDto) {
-        eventDto.setConfirmedRequests(requestsRepository.countParticipationByEventIdAndStatus(eventDto.getId(),
-                CONFIRMED));
+        eventDto.setConfirmedRequests(Long.valueOf(requestsRepository.countParticipationRequests(eventDto.getId(),
+                CONFIRMED.toString()).size()));
         return eventDto;
     }
 }

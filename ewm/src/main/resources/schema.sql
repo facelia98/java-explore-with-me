@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS requests
     created      TIMESTAMP,
     event_id     BIGINT,
     requester_id BIGINT,
-    status       VARCHAR,
+    status       VARCHAR(10),
     CONSTRAINT fk_requestor_to_request FOREIGN KEY (requester_id) REFERENCES users (id),
     CONSTRAINT fk_event_to_request FOREIGN KEY (event_id) REFERENCES events (id),
     UNIQUE (event_id, requester_id)

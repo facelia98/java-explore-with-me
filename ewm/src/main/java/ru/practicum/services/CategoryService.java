@@ -9,6 +9,7 @@ import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.exceptions.Conflict;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.mappers.CategoryMapper;
+import ru.practicum.models.Category;
 import ru.practicum.repositories.CategoryRepository;
 import ru.practicum.repositories.EventRepository;
 
@@ -55,7 +56,8 @@ public class CategoryService {
 
     public CategoryDto updateById(Long id, CategoryDto dto) {
         if (dto.getName() != null) {
-            if (categoryRepository.findByName(dto.getName()) != null) {
+            Category c = categoryRepository.findByName(dto.getName());
+            if (c != null && c.getId() != id) {
                 log.error("Duplicate category name!");
                 throw new Conflict("Duplicate category name!");
             }
