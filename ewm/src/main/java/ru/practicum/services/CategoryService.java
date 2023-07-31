@@ -57,7 +57,7 @@ public class CategoryService {
     public CategoryDto updateById(Long id, CategoryDto dto) {
         if (dto.getName() != null) {
             Category c = categoryRepository.findByName(dto.getName());
-            if (c != null && c.getId() != id) {
+            if (c != null && !c.getId().equals(id)) {
                 log.error("Duplicate category name!");
                 throw new Conflict("Duplicate category name!");
             }
