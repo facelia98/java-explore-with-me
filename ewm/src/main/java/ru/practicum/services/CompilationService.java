@@ -55,8 +55,10 @@ public class CompilationService {
             }
             compilationToUpdate.setEvents(events);
         }
-        compilationToUpdate.setPinned(compilationUpdateDto.getPinned());
-        compilationToUpdate.setTitle(compilationUpdateDto.getTitle());
+        compilationToUpdate.setPinned(compilationUpdateDto.getPinned() == null ?
+                compilationToUpdate.getPinned() : compilationUpdateDto.getPinned());
+        compilationToUpdate.setTitle(compilationUpdateDto.getTitle() == null ?
+                compilationToUpdate.getTitle() : compilationUpdateDto.getTitle());
 
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilationToUpdate));
     }

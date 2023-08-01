@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RequestsRepository extends JpaRepository<ParticipationRequest, Long> {
-    List<ParticipationRequest> getParticipationRequestByEventAndRequester(Long eventId, Long userId);
+    List<ParticipationRequest> findAllByEvent_IdAndRequester_Id(Long eventId, Long userId);
 
     @Query("select pr from ParticipationRequest pr where pr.status = :status and pr.event.id = :event")
     List<ParticipationRequest> countParticipationRequests(Long event, String status);

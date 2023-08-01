@@ -29,7 +29,8 @@ public class RequestService {
     private final EventRepository eventRepository;
 
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
-        return requestsRepository.getParticipationRequestByEventAndRequester(eventId, userId)
+        List<ParticipationRequest> pr = requestsRepository.findAllByEvent_IdAndRequester_Id(eventId, userId);
+        return pr
                 .stream().map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
@@ -41,8 +42,8 @@ public class RequestService {
         List<Long> ids = request.getRequestIds();
         Status state = request.getStatus();
 
-        List<ParticipationRequest> confirmedList = new ArrayList<>();
-        List<ParticipationRequest> rejectedList = new ArrayList<>();
+        List<ParticipationRequestDto> confirmedList = new ArrayList<>();
+        List<ParticipationRequestDto> rejectedList = new ArrayList<>();
 
         for (Long id : ids) {
 
@@ -62,20 +63,17 @@ public class RequestService {
             }
             if (state.equals(Status.CONFIRMED)) {
                 newrequest.setStatus("CONFIRMED");
-                confirmedList.add(requestsRepository.save(newrequest));
+                confirmedList.add(RequestMapper.toParticipationRequestDto(requestsRepository.save(newrequest)));
                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             } else {
                 newrequest.setStatus("REJECTED");
-                rejectedList.add(requestsRepository.save(newrequest));
+                rejectedList.add(RequestMapper.toParticipationRequestDto(requestsRepository.save(newrequest)));
             }
         }
         eventRepository.save(event);
 
         log.info("ParticipationRequestService: Статус заявки изменен.");
-        return new EventRequestStatusUpdateResult(confirmedList.stream()
-                .map(participationRequest -> participationRequest.getId()).collect(Collectors.toList()),
-                rejectedList.stream()
-                        .map(participationRequest -> participationRequest.getId()).collect(Collectors.toList()));
+        return new EventRequestStatusUpdateResult(confirmedList, rejectedList);
     }
 
     @Transactional(readOnly = true)
@@ -120,7 +118,7 @@ public class RequestService {
         request.setRequester(user);
         request.setEvent(event);
 
-        if (!event.getRequestModeration()) {
+        if (event.getRequestModeration()) {
             request.setStatus("PENDING");
         } else {
             request.setStatus("CONFIRMED");

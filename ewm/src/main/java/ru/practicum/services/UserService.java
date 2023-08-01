@@ -24,8 +24,15 @@ public class UserService {
     private final UserRepository userRepository;
 
     public List<UserDto> findAll(List<Long> ids, int from, int size) {
+        if (ids == null) {
+            return userRepository.findAll(PageRequest.of(from / size, size))
+                    .stream()
+                    .map(UserMapper::toUserDto)
+                    .collect(Collectors.toList());
+        }
         return userRepository.findAll(PageRequest.of(from / size, size))
                 .stream()
+                .filter(user -> ids.contains(user.getId()))
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }

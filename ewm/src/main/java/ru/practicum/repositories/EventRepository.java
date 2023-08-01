@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import ru.practicum.models.Event;
 import ru.practicum.models.User;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
@@ -23,18 +22,16 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByCategoryId(Long categoryId);
 
     @Query("SELECT e FROM Event AS e " +
-            "WHERE e.eventDate BETWEEN :start AND :end " +
-            "AND ((:users) IS NULL OR e.initiator.id IN :users) " +
+            "WHERE ((:users) IS NULL OR e.initiator.id IN :users) " +
             "AND ((:states) IS NULL OR e.eventState IN :states) " +
             "AND ((:categories) IS NULL OR e.category.id IN :categories)")
-    List<Event> findAllForAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                LocalDateTime start, LocalDateTime end, Pageable pageable);
+    List<Event> findAllForAdmin(List<Long> users, List<String> states, List<Long> categories, Pageable pageable);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE (lower(e.annotation) like lower(concat('%', :text, '%')) " +
             "OR lower(e.description) like lower(concat('%', :text, '%'))) " +
             "AND ((:categoryIds) IS NULL OR e.category.id IN :categoryIds) " +
-            "AND e.paid = :paid " +
+            "AND ((:paid) IS NULL OR e.paid = :paid)" +
             "AND e.eventState IN :state")
     List<Event> searchEvents(String text, List<Long> categoryIds, Boolean paid, String state, Pageable pageable);
 }

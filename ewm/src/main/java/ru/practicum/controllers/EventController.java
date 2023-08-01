@@ -23,7 +23,7 @@ public class EventController {
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
-                                         @RequestParam(required = false) List<Long> categoryIds,
+                                         @RequestParam(required = false) List<Long> categories,
                                          @RequestParam(required = false) Boolean paid,
                                          @RequestParam(required = false) String rangeStart,
                                          @RequestParam(required = false) String rangeEnd,
@@ -31,7 +31,7 @@ public class EventController {
                                          @RequestParam(required = false, defaultValue = "EVENT_DATE") String sort,
                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                          @Positive @RequestParam(defaultValue = "10") int size) {
-        return eventService.getEvents(text, categoryIds, paid, rangeStart, rangeEnd, onlyAvailable,
+        return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sort, from, size);
     }
 
@@ -39,5 +39,4 @@ public class EventController {
     public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request) {
         return eventService.getById(id, request);
     }
-
 }

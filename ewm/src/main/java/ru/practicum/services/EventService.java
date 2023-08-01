@@ -181,31 +181,33 @@ public class EventService {
     }
 
     public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                             LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
-        List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, rangeStart, rangeEnd, PageRequest.of(from / size, size));
-        return tmp.stream().map(EventMapper::toEventFullDto)
+                                             LocalDateTime start, LocalDateTime end, Integer from, Integer size) {
+        List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, PageRequest.of(from / size, size));
+        LocalDateTime st = start == null ? LocalDateTime.MIN : start;
+        LocalDateTime en = end == null ? LocalDateTime.MAX : end;
+        return tmp.stream()
+                .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
+                .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String rangeStart,
-                                         String rangeEnd, Boolean onlyAvailable, String sort, int from, int size) {
-        if (rangeStart != null && rangeEnd != null) {
-            if (LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                    .isAfter(LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
+    public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String start,
+                                         String end, Boolean onlyAvailable, String sort, int from, int size) {
+        String t = text == null ? " " : text;
+        if (start != null && end != null) {
+            if (LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    .isAfter(LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))) {
                 log.warn("Validation exception: end-date is before start-date");
                 throw new ValidationException("End-date is before start-date!");
             }
         }
-        List<EventShortDto> events = eventRepository.searchEvents(text, categoryIds, paid, "PUBLISHED",
+        LocalDateTime st = start == null ? LocalDateTime.MIN : LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime en = end == null ? LocalDateTime.MAX : LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        List<EventShortDto> events = eventRepository.searchEvents(t, categoryIds, paid, "PUBLISHED",
                         PageRequest.of(from / size, size))
                 .stream()
-                .filter(event -> rangeStart != null ?
-                        event.getEventDate().isAfter(LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) :
-                        event.getEventDate().isAfter(LocalDateTime.now())
-                                && rangeEnd != null ? event.getEventDate().isBefore(LocalDateTime.parse(rangeEnd,
-                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))) :
-                                event.getEventDate().isBefore(LocalDateTime.MAX))
+                .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
                 .map(EventMapper::toEventShortDto)
                 .map(this::setConfirmedRequests).collect(Collectors.toList());
         if (onlyAvailable) {
