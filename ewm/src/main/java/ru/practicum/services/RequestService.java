@@ -29,10 +29,12 @@ public class RequestService {
     private final EventRepository eventRepository;
 
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
-        List<ParticipationRequest> pr = requestsRepository.findAllByEvent_IdAndRequester_Id(eventId, userId);
-        return pr
-                .stream().map(RequestMapper::toParticipationRequestDto)
-                .collect(Collectors.toList());
+        List<ParticipationRequest> pr = requestsRepository.findAll();
+                return pr.stream().filter(participationRequest -> participationRequest.getEvent().getId().equals(eventId) &&
+                        participationRequest.getRequester().getId().equals(userId))
+                        .map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
+        //List<ParticipationRequest> pr = requestsRepository.findAllByEvent_IdAndRequester_Id(eventId, userId);
+        //return pr.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
     }
 
     public EventRequestStatusUpdateResult requestStatusUpdate(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
@@ -118,11 +120,12 @@ public class RequestService {
         request.setRequester(user);
         request.setEvent(event);
 
-        if (event.getRequestModeration()) {
+        if (event.getRequestModeration() && event.getParticipantLimit() != 0L) {
             request.setStatus("PENDING");
         } else {
             request.setStatus("CONFIRMED");
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventRepository.save(event);
         }
         ParticipationRequest returned = requestsRepository.save(request);
         return RequestMapper.toParticipationRequestDto(returned);
