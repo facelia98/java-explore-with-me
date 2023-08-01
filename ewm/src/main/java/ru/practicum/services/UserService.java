@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.UserDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.exceptions.Conflict;
@@ -24,21 +23,24 @@ public class UserService {
     private final UserRepository userRepository;
 
     public List<UserDto> findAll(List<Long> ids, int from, int size) {
-        if (ids == null) {
-            return userRepository.findAll(PageRequest.of(from / size, size))
+        log.info("GET Users request received");
+        if (ids == null || ids.isEmpty()) {
+            List<User> users = userRepository.findAll(PageRequest.of(from / size, size)).toList();
+            return users
                     .stream()
                     .map(UserMapper::toUserDto)
                     .collect(Collectors.toList());
         }
-        return userRepository.findAll(PageRequest.of(from / size, size))
+        List<User> users = userRepository.findAllByIds(ids, PageRequest.of(from / size, size));
+        return users
                 .stream()
                 .filter(user -> ids.contains(user.getId()))
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     public UserDto save(NewUserRequest userCreateDto) {
+        log.info("POST User request received");
         if (userRepository.getUserByName(userCreateDto.getName()) != null) {
             log.error("Duplicate user name!");
             throw new Conflict("Duplicate user name!");

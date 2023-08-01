@@ -29,16 +29,15 @@ public class RequestService {
     private final EventRepository eventRepository;
 
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
-        List<ParticipationRequest> pr = requestsRepository.findAll();
-                return pr.stream().filter(participationRequest -> participationRequest.getEvent().getId().equals(eventId) &&
-                        participationRequest.getRequester().getId().equals(userId))
-                        .map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
-        //List<ParticipationRequest> pr = requestsRepository.findAllByEvent_IdAndRequester_Id(eventId, userId);
-        //return pr.stream().map(RequestMapper::toParticipationRequestDto).collect(Collectors.toList());
+        log.info("GET ParticipationRequests request received for eventId = {}", eventId);
+        return requestsRepository.findAllByEvent_Id(eventId)
+                .stream()
+                .map(RequestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
     }
 
     public EventRequestStatusUpdateResult requestStatusUpdate(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
-        User user = userRepository.getById(userId);
+        log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
         Event event = eventRepository.getById(eventId);
 
         List<Long> ids = request.getRequestIds();
@@ -73,13 +72,12 @@ public class RequestService {
             }
         }
         eventRepository.save(event);
-
-        log.info("ParticipationRequestService: Статус заявки изменен.");
         return new EventRequestStatusUpdateResult(confirmedList, rejectedList);
     }
 
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getParticipationRequests(Long userId) {
+        log.info("GET ParticipationRequest request received for userId = {}", userId);
         return requestsRepository.findAllByRequesterId(userId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
@@ -87,13 +85,15 @@ public class RequestService {
     }
 
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
+        log.info("PATCH CANCEL ParticipationRequest request received for requestId = {}, userId = {}", requestId, userId);
         ParticipationRequest request = requestsRepository.findByIdAndRequesterId(requestId, userId)
-                .orElseThrow(() -> new ValidationException(""));
+                .orElseThrow(() -> new ValidationException("ParticipationRequest not found for pair userId-requestId"));
         request.setStatus(Status.CANCELED.toString());
         return RequestMapper.toParticipationRequestDto(requestsRepository.save(request));
     }
 
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
+        log.info("POST ParticipationRequest request received for eventId = {}, userId = {}", eventId, userId);
         List<ParticipationRequest> pr = requestsRepository.findByEventIdAndRequesterId(eventId, userId);
         if (!pr.isEmpty()) {
             throw new Conflict("Duplicate participation request");

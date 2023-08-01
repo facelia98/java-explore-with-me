@@ -41,6 +41,7 @@ public class EventService {
 
 
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
+        log.info("GET Events request received");
         return eventRepository
                 .findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
                 .map(EventMapper::toEventShortDto)
@@ -48,6 +49,7 @@ public class EventService {
     }
 
     public EventFullDto getByIdAndInitiator(Long id, Long userId) {
+        log.info("GET Event request received whit userId = {}, eventId = {}", userId, id);
         if (!eventRepository.existsById(id)) {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
@@ -56,6 +58,7 @@ public class EventService {
     }
 
     public EventFullDto getById(Long id, HttpServletRequest request) {
+        log.info("GET Event request received whit eventId = {}", id);
         client.postHit(EndpointHitDto.builder()
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
@@ -79,6 +82,7 @@ public class EventService {
     }
 
     public EventFullDto addNewEvent(NewEventDto dto, Long userId) {
+        log.info("POST Event request received");
         if (!categoryRepository.existsById(dto.getCategory())) {
             log.error("Category not found for id = {}", dto.getCategory());
             throw new NotFoundException("Category not found for id = " + dto.getCategory());
@@ -106,6 +110,7 @@ public class EventService {
     }
 
     public EventFullDto updateEvent(Long eventId, Long userId, UpdateEventUserRequest request) {
+        log.info("PATCH Event request received for eventId = {}", eventId);
         if (!eventRepository.existsById(eventId)) {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -143,6 +148,7 @@ public class EventService {
 
     @Transactional
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request) {
+        log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
         if (!eventRepository.existsById(eventId)) {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -182,6 +188,7 @@ public class EventService {
 
     public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
                                              LocalDateTime start, LocalDateTime end, Integer from, Integer size) {
+        log.info("GET Events request received from admin endpoint");
         List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, PageRequest.of(from / size, size));
         LocalDateTime st = start == null ? LocalDateTime.MIN : start;
         LocalDateTime en = end == null ? LocalDateTime.MAX : end;
@@ -193,7 +200,15 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String start,
-                                         String end, Boolean onlyAvailable, String sort, int from, int size) {
+                                         String end, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
+        log.info("GET Events request received");
+        client.postHit(EndpointHitDto.builder()
+                .ip(request.getRemoteAddr())
+                .uri(request.getRequestURI())
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build());
+
         String t = text == null ? " " : text;
         if (start != null && end != null) {
             if (LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -232,15 +247,15 @@ public class EventService {
                             .collect(Collectors.toList());
                     break;
                 default:
-                    throw new ValidationException("EventService: Сортировка возможна только по просмотрам или дате события.");
+                    throw new ValidationException("Unallowed sorting method");
             }
         }
         return events;
     }
 
     private EventShortDto setConfirmedRequests(EventShortDto eventDto) {
-        eventDto.setConfirmedRequests(Long.valueOf(requestsRepository.countParticipationRequests(eventDto.getId(),
-                CONFIRMED.toString()).size()));
+        eventDto.setConfirmedRequests((long) requestsRepository.countParticipationRequests(eventDto.getId(),
+                CONFIRMED.toString()).size());
         return eventDto;
     }
 }

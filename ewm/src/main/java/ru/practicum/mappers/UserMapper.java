@@ -24,10 +24,4 @@ public class UserMapper {
                 .name(dto.getName())
                 .email(dto.getEmail()).build();
     }
-
-    public static User toUser(UserShortDto dto) {
-        return User.builder()
-                .id(dto.getId())
-                .name(dto.getName()).build();
-    }
 }

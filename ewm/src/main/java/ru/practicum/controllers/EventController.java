@@ -30,9 +30,10 @@ public class EventController {
                                          @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                          @RequestParam(required = false, defaultValue = "EVENT_DATE") String sort,
                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                         @Positive @RequestParam(defaultValue = "10") int size) {
+                                         @Positive @RequestParam(defaultValue = "10") int size,
+                                         HttpServletRequest request) {
         return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
-                sort, from, size);
+                sort, from, size, request);
     }
 
     @GetMapping("/{id}")

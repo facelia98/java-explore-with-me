@@ -24,6 +24,7 @@ public class CategoryService {
     private final EventRepository eventRepository;
 
     public List<CategoryDto> get(Integer from, Integer size) {
+        log.info("GET Category request received to endpoint [/categories]");
         return categoryRepository
                 .findAll(PageRequest.of(from, size)).get()
                 .map(CategoryMapper::toCategoryDto)
@@ -31,6 +32,7 @@ public class CategoryService {
     }
 
     public CategoryDto getById(Long id) {
+        log.info("GET Category request received to endpoint [/categories] with id = {}", id);
         if (!categoryRepository.existsById(id)) {
             log.error("Category not found for id = {}", id);
             throw new NotFoundException("Category not found for id = " + id);
@@ -39,6 +41,7 @@ public class CategoryService {
     }
 
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
+        log.info("POST Category request received to endpoint [/categories]");
         if (categoryRepository.findByName(categoryDto.getName()) != null) {
             log.error("Duplicate category name!");
             throw new Conflict("Duplicate category name!");
@@ -47,6 +50,7 @@ public class CategoryService {
     }
 
     public void deleteById(Long id) {
+        log.info("DELETE Category request received to endpoint [/categories] with id = {}", id);
         if (!eventRepository.findByCategoryId(id).isEmpty()) {
             log.warn("Category being deleted contains events");
             throw new Conflict("Category being deleted contains events!");
@@ -55,6 +59,7 @@ public class CategoryService {
     }
 
     public CategoryDto updateById(Long id, CategoryDto dto) {
+        log.info("PATCH Category request received to endpoint [/categories] with id = {}", id);
         if (dto.getName() != null) {
             Category c = categoryRepository.findByName(dto.getName());
             if (c != null && !c.getId().equals(id)) {

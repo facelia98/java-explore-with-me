@@ -26,11 +26,6 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
             "WHERE h.uri IN ?3 AND h.created BETWEEN ?1 AND ?2 GROUP BY h.app, h.uri ORDER BY COUNT (h.ip) DESC")
     List<ViewStatsDto> findHitsByCreatedBetweenAndUriInUnique(LocalDateTime start, LocalDateTime end, List<String> uris);
 
-    @Query("SELECT NEW ru.practicum.dto.ViewStatsDto(h.app, h.uri, COUNT (DISTINCT h.ip)) FROM Hit AS h " +
-            "WHERE h.uri = ?1 GROUP BY h.app, h.uri ORDER BY COUNT (h.ip) DESC")
-    List<ViewStatsDto> findHitsByUriUnique(String uri);
-
-
     @Query("select count(distinct h.ip) from Hit as h where h.uri = :uri")
     Integer findAllByUri(String uri);
 }

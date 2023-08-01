@@ -26,12 +26,14 @@ public class CompilationService {
     private final EventRepository eventRepository;
 
     public List<CompilationDto> get(Integer from, Integer size) {
+        log.info("GET Compilations request received");
         return compilationRepository.findAll(PageRequest.of(from, size)).get()
                 .map(CompilationMapper::toCompilationDto)
                 .collect(Collectors.toList());
     }
 
     public CompilationDto getById(Long id) {
+        log.info("GET Compilation request received with id = {}", id);
         if (!compilationRepository.existsById(id)) {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Compilation not found for id = " + id);
@@ -40,12 +42,14 @@ public class CompilationService {
     }
 
     public void deleteCompilation(Long compId) {
+        log.info("DELETE Compilation request received with id = {}", compId);
         compilationRepository.findById(compId).orElseThrow(() ->
                 new NotFoundException("Incorrect id"));
         compilationRepository.deleteById(compId);
     }
 
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest compilationUpdateDto) {
+        log.info("PATCH Compilation request received with id = {}", compId);
         Compilation compilationToUpdate = compilationRepository.getById(compId);
 
         if (compilationUpdateDto.getEvents() != null) {
@@ -64,6 +68,7 @@ public class CompilationService {
     }
 
     public CompilationDto saveCompilation(NewCompilationDto compilationCreateDto) {
+        log.info("POST Compilation request received");
         Compilation compilation = CompilationMapper.toCompilation(compilationCreateDto);
         List<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
         compilation.setEvents(events);
