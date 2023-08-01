@@ -120,7 +120,7 @@ public class RequestService {
         request.setRequester(user);
         request.setEvent(event);
 
-        if (event.getRequestModeration()) {
+        if (!event.getRequestModeration()) {
             request.setStatus("PENDING");
         } else {
             request.setStatus("CONFIRMED");

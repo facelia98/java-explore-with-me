@@ -18,6 +18,12 @@ import java.util.List;
 public class StatsController {
     private final StatsService statsService;
 
+
+    @GetMapping("/views")
+    public Integer getViews(@RequestParam(name = "uri", required = false) String uri) {
+        return statsService.getViews(uri);
+    }
+
     @GetMapping("/stats")
     public List<ViewStatsDto> getStats(@RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                        @RequestParam(name = "end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,

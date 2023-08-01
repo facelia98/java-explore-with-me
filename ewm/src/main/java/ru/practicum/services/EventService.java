@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.client.ViewStatsClient;
+import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewEventDto;
@@ -17,6 +19,7 @@ import ru.practicum.mappers.EventMapper;
 import ru.practicum.models.Event;
 import ru.practicum.repositories.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -34,6 +37,8 @@ public class EventService {
     private final UserRepository userRepository;
     private final RequestsRepository requestsRepository;
     private final LocationRepository locationRepository;
+    private final ViewStatsClient client;
+
 
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
         return eventRepository
@@ -50,7 +55,14 @@ public class EventService {
         return EventMapper.toEventFullDto(eventRepository.findByInitiatorAndId(userRepository.getById(userId), id));
     }
 
-    public EventFullDto getById(Long id) {
+    public EventFullDto getById(Long id, HttpServletRequest request) {
+        client.postHit(EndpointHitDto.builder()
+                .ip(request.getRemoteAddr())
+                .uri(request.getRequestURI())
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build());
+
         if (!eventRepository.existsById(id)) {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
@@ -59,7 +71,11 @@ public class EventService {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
         }
-        return EventMapper.toEventFullDto(eventRepository.getById(id));
+        Event event = eventRepository.getById(id);
+
+        Integer tmp = client.getViews(request.getRequestURI());
+        event.setViews(tmp.longValue());
+        return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
     public EventFullDto addNewEvent(NewEventDto dto, Long userId) {

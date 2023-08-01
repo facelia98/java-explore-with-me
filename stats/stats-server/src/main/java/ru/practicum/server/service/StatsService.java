@@ -31,6 +31,11 @@ public class StatsService {
                         statsRepository.findHitsByCreatedBetweenAndUriIn(start, end, uris);
     }
 
+    public Integer getViews(String uri) {
+        log.info("GET views count request received to endpoint [/stats]");
+        return statsRepository.findAllByUri(uri);
+    }
+
     public void create(EndpointHitDto endpointHitDto) {
         log.info("POST EndpointHit request received to endpoint [/hit]");
         statsRepository.save(HitMapper.toHit(endpointHitDto));
