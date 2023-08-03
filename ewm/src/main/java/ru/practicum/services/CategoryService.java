@@ -46,10 +46,10 @@ public class CategoryService {
     @Transactional
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
         log.info("POST Category request received to endpoint [/categories]");
-        /*if (categoryRepository.findByName(categoryDto.getName()) != null) {
+        if (categoryRepository.findByName(categoryDto.getName()) != null) {
             log.error("Duplicate category name!");
             throw new Conflict("Duplicate category name!");
-        }*/
+        }
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
@@ -63,7 +63,6 @@ public class CategoryService {
         }
         categoryRepository.deleteById(id);
     }
-
 
     @Transactional
     public CategoryDto updateById(Long id, CategoryDto dto) {
