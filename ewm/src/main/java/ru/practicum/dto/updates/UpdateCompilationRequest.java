@@ -1,9 +1,8 @@
 package ru.practicum.dto.updates;
 
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -11,10 +10,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Validated
 public class UpdateCompilationRequest {
     private List<Long> events;
     private Boolean pinned;
-    @Length(max = 50)
+    @Size(max = 50)
     private String title;
 }

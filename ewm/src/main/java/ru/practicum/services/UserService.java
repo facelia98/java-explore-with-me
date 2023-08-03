@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.UserDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.exceptions.Conflict;
@@ -22,23 +23,23 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public List<UserDto> findAll(List<Long> ids, int from, int size) {
         log.info("GET Users request received");
         if (ids == null || ids.isEmpty()) {
-            List<User> users = userRepository.findAll(PageRequest.of(from / size, size)).toList();
-            return users
+            return userRepository.findAll(PageRequest.of(from / size, size))
                     .stream()
                     .map(UserMapper::toUserDto)
                     .collect(Collectors.toList());
         }
-        List<User> users = userRepository.findAllByIds(ids, PageRequest.of(from / size, size));
-        return users
+        return userRepository.findAllByIds(ids, PageRequest.of(from / size, size))
                 .stream()
                 .filter(user -> ids.contains(user.getId()))
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public UserDto save(NewUserRequest userCreateDto) {
         log.info("POST User request received");
         if (userRepository.getUserByName(userCreateDto.getName()) != null) {
@@ -51,6 +52,7 @@ public class UserService {
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
+    @Transactional
     public void deleteById(Long userId) {
         log.info("DELETE user request received for id = {}", userId);
         if (userRepository.getById(userId) == null) {

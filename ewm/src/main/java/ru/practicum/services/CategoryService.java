@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CategoryDto;
 import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.exceptions.Conflict;
@@ -23,6 +24,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
+    @Transactional(readOnly = true)
     public List<CategoryDto> get(Integer from, Integer size) {
         log.info("GET Category request received to endpoint [/categories]");
         return categoryRepository
@@ -31,6 +33,7 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CategoryDto getById(Long id) {
         log.info("GET Category request received to endpoint [/categories] with id = {}", id);
         if (!categoryRepository.existsById(id)) {
@@ -40,15 +43,18 @@ public class CategoryService {
         return CategoryMapper.toCategoryDto(categoryRepository.getById(id));
     }
 
+    @Transactional
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
         log.info("POST Category request received to endpoint [/categories]");
-        if (categoryRepository.findByName(categoryDto.getName()) != null) {
+        /*if (categoryRepository.findByName(categoryDto.getName()) != null) {
             log.error("Duplicate category name!");
             throw new Conflict("Duplicate category name!");
-        }
+        }*/
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
+
+    @Transactional
     public void deleteById(Long id) {
         log.info("DELETE Category request received to endpoint [/categories] with id = {}", id);
         if (!eventRepository.findByCategoryId(id).isEmpty()) {
@@ -58,6 +64,8 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
+
+    @Transactional
     public CategoryDto updateById(Long id, CategoryDto dto) {
         log.info("PATCH Category request received to endpoint [/categories] with id = {}", id);
         if (dto.getName() != null) {

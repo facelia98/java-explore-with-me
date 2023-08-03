@@ -1,19 +1,17 @@
 package ru.practicum.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +23,9 @@ public class Event {
     private Category category;
     @Column(name = "confirmed_requests")
     private Long confirmedRequests;
-    @Column(name = "created_on")
+    @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "text", nullable = false)
     private String description;
     @Column(name = "event_date")
     private LocalDateTime eventDate;
@@ -37,13 +35,15 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
+    @Column(nullable = false)
     private Boolean paid;
     private Long participantLimit;
     private LocalDateTime publishedOn;
+    @Column(nullable = false)
     private Boolean requestModeration;
     @Column(name = "state")
     private String eventState;
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "text", nullable = false)
     private String title;
     private Long views;
 }

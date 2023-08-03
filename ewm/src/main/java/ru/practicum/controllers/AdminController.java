@@ -1,7 +1,6 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -14,7 +13,7 @@ import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
-import ru.practicum.dto.updates.UpdateEventAdminRequest;
+import ru.practicum.dto.updates.UpdateEventRequest;
 import ru.practicum.services.CategoryService;
 import ru.practicum.services.CompilationService;
 import ru.practicum.services.EventService;
@@ -29,7 +28,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@Slf4j
 @Validated
 public class AdminController {
     private final CategoryService categoryService;
@@ -68,8 +66,8 @@ public class AdminController {
 
     @PatchMapping("/events/{eventId}")
     EventFullDto update(@PathVariable Long eventId,
-                        @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        return eventService.updateEventByAdmin(eventId, updateEventAdminRequest);
+                        @Valid @RequestBody UpdateEventRequest updateEventRequest) {
+        return eventService.updateEventByAdmin(eventId, updateEventRequest);
     }
 
     @GetMapping("/users")

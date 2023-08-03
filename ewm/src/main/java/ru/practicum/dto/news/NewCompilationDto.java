@@ -1,10 +1,9 @@
 package ru.practicum.dto.news;
 
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -12,11 +11,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Validated
 public class NewCompilationDto {
     private List<Long> events;
     private Boolean pinned = false;
     @NotBlank
-    @Length(max = 50)
+    @Size(max = 50)
     private String title;
 }

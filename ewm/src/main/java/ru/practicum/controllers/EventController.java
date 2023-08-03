@@ -1,9 +1,10 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.client.ViewStatsClient;
+import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.services.EventService;
@@ -11,15 +12,18 @@ import ru.practicum.services.EventService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
 @RequestMapping("/events")
-@Slf4j
 @Validated
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
+
+    private final ViewStatsClient client;
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
@@ -32,12 +36,26 @@ public class EventController {
                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                          @Positive @RequestParam(defaultValue = "10") int size,
                                          HttpServletRequest request) {
+        client.postHit(EndpointHitDto.builder()
+                .ip(request.getRemoteAddr())
+                .uri(request.getRequestURI())
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build());
+
         return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sort, from, size, request);
     }
 
     @GetMapping("/{id}")
     public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request) {
+        client.postHit(EndpointHitDto.builder()
+                .ip(request.getRemoteAddr())
+                .uri(request.getRequestURI())
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build());
+
         return eventService.getById(id, request);
     }
 }

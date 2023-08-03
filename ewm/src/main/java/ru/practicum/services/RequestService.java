@@ -28,6 +28,7 @@ public class RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
         log.info("GET ParticipationRequests request received for eventId = {}", eventId);
         return requestsRepository.findAllByEvent_Id(eventId)
@@ -36,6 +37,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public EventRequestStatusUpdateResult requestStatusUpdate(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
         log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
         Event event = eventRepository.getById(eventId);
@@ -84,6 +86,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
         log.info("PATCH CANCEL ParticipationRequest request received for requestId = {}, userId = {}", requestId, userId);
         ParticipationRequest request = requestsRepository.findByIdAndRequesterId(requestId, userId)
@@ -92,6 +95,7 @@ public class RequestService {
         return RequestMapper.toParticipationRequestDto(requestsRepository.save(request));
     }
 
+    @Transactional
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
         log.info("POST ParticipationRequest request received for eventId = {}, userId = {}", eventId, userId);
         List<ParticipationRequest> pr = requestsRepository.findByEventIdAndRequesterId(eventId, userId);

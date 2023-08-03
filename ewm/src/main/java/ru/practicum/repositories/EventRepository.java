@@ -8,6 +8,7 @@ import ru.practicum.models.Event;
 import ru.practicum.models.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByInitiatorId(Long userId, PageRequest pageRequest);
@@ -15,7 +16,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event AS e " +
             "WHERE e.id IN :events " +
             "ORDER BY e.id")
-    List<Event> findEventsByIds(List<Long> events);
+    Set<Event> findEventsByIds(List<Long> events);
 
     Event findByInitiatorAndId(User user, Long id);
 

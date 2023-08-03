@@ -1,16 +1,14 @@
 package ru.practicum.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,5 +19,6 @@ public class User {
 
     private String name;
     @Email
+    @Column(nullable = false, unique = true)
     private String email;
 }

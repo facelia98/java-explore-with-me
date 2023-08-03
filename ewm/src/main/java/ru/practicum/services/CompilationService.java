@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
@@ -14,8 +15,9 @@ import ru.practicum.models.Event;
 import ru.practicum.repositories.CompilationRepository;
 import ru.practicum.repositories.EventRepository;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +27,8 @@ public class CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
 
+
+    @Transactional(readOnly = true)
     public List<CompilationDto> get(Integer from, Integer size) {
         log.info("GET Compilations request received");
         return compilationRepository.findAll(PageRequest.of(from, size)).get()
@@ -32,6 +36,8 @@ public class CompilationService {
                 .collect(Collectors.toList());
     }
 
+
+    @Transactional(readOnly = true)
     public CompilationDto getById(Long id) {
         log.info("GET Compilation request received with id = {}", id);
         if (!compilationRepository.existsById(id)) {
@@ -41,6 +47,8 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilationRepository.getById(id));
     }
 
+
+    @Transactional
     public void deleteCompilation(Long compId) {
         log.info("DELETE Compilation request received with id = {}", compId);
         compilationRepository.findById(compId).orElseThrow(() ->
@@ -48,12 +56,13 @@ public class CompilationService {
         compilationRepository.deleteById(compId);
     }
 
+    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest compilationUpdateDto) {
         log.info("PATCH Compilation request received with id = {}", compId);
         Compilation compilationToUpdate = compilationRepository.getById(compId);
 
         if (compilationUpdateDto.getEvents() != null) {
-            List<Event> events = new ArrayList<>();
+            Set<Event> events = new HashSet<>();
             if (compilationUpdateDto.getEvents().size() != 0) {
                 events = eventRepository.findEventsByIds(compilationUpdateDto.getEvents());
             }
@@ -67,10 +76,12 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilationToUpdate));
     }
 
+
+    @Transactional
     public CompilationDto saveCompilation(NewCompilationDto compilationCreateDto) {
         log.info("POST Compilation request received");
         Compilation compilation = CompilationMapper.toCompilation(compilationCreateDto);
-        List<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
+        Set<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
         compilation.setEvents(events);
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }
