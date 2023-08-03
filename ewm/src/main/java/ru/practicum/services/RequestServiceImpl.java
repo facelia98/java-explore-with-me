@@ -14,6 +14,7 @@ import ru.practicum.models.*;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.repositories.RequestsRepository;
 import ru.practicum.repositories.UserRepository;
+import ru.practicum.services.interfaces.RequestService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,11 +24,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RequestService {
+public class RequestServiceImpl implements RequestService {
     private final RequestsRepository requestsRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
+    @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
         log.info("GET ParticipationRequests request received for eventId = {}", eventId);
@@ -37,11 +39,14 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional
     public EventRequestStatusUpdateResult requestStatusUpdate(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
         log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
-        Event event = eventRepository.getById(eventId);
-
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.error("Event not found for id = {}", eventId);
+            throw new NotFoundException("Event not found for id = " + eventId);
+        });
         List<Long> ids = request.getRequestIds();
         Status state = request.getStatus();
 
@@ -51,19 +56,17 @@ public class RequestService {
         for (Long id : ids) {
 
             if (event.getParticipantLimit() != 0L) {
-                int count = requestsRepository
-                        .countParticipationRequests(eventId, "CONFIRMED").size();
+                int count = requestsRepository.countParticipationRequests(eventId, "CONFIRMED").size();
                 if (event.getParticipantLimit() <= count) {
                     throw new Conflict("Limit");
                 }
             }
 
-            ParticipationRequest newrequest = requestsRepository.findByIdAndEvent_Id(id, eventId).orElseThrow(() ->
-                    new NotFoundException("PR not found"));
+            ParticipationRequest newrequest = requestsRepository.findByIdAndEvent_Id(id, eventId)
+                    .orElseThrow(() -> new NotFoundException("PR not found"));
 
-            if (!newrequest.getStatus().equals("PENDING")) {
-                throw new Conflict("Conflict");
-            }
+            if (!newrequest.getStatus().equals("PENDING")) throw new Conflict("Conflict");
+
             if (state.equals(Status.CONFIRMED)) {
                 newrequest.setStatus("CONFIRMED");
                 confirmedList.add(RequestMapper.toParticipationRequestDto(requestsRepository.save(newrequest)));
@@ -77,6 +80,7 @@ public class RequestService {
         return new EventRequestStatusUpdateResult(confirmedList, rejectedList);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getParticipationRequests(Long userId) {
         log.info("GET ParticipationRequest request received for userId = {}", userId);
@@ -86,6 +90,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
         log.info("PATCH CANCEL ParticipationRequest request received for requestId = {}, userId = {}", requestId, userId);
@@ -95,6 +100,7 @@ public class RequestService {
         return RequestMapper.toParticipationRequestDto(requestsRepository.save(request));
     }
 
+    @Override
     @Transactional
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
         log.info("POST ParticipationRequest request received for eventId = {}, userId = {}", eventId, userId);
@@ -102,9 +108,14 @@ public class RequestService {
         if (!pr.isEmpty()) {
             throw new Conflict("Duplicate participation request");
         }
-        User user = userRepository.getById(userId);
-        Event event = eventRepository.getById(eventId);
-
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found for id = {}", userId);
+            throw new NotFoundException("User not found for id = " + userId);
+        });
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.error("Event not found for id = {}", eventId);
+            throw new NotFoundException("Event not found for id = " + eventId);
+        });
         if (userId.equals(event.getInitiator().getId())) {
             throw new Conflict("Initiator couldn't send request");
         }

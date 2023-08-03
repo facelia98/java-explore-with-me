@@ -7,7 +7,7 @@ import ru.practicum.client.ViewStatsClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.services.EventService;
+import ru.practicum.services.interfaces.EventService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;

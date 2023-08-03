@@ -18,6 +18,7 @@ import ru.practicum.models.Category;
 import ru.practicum.models.Event;
 import ru.practicum.models.User;
 import ru.practicum.repositories.*;
+import ru.practicum.services.interfaces.EventService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ import static ru.practicum.enums.Status.CONFIRMED;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EventService {
+public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
@@ -39,6 +40,7 @@ public class EventService {
     private final LocationRepository locationRepository;
     private final ViewStatsClient client;
 
+    @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
         log.info("GET Events request received");
@@ -48,34 +50,42 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public EventFullDto getByIdAndInitiator(Long id, Long userId) {
-        log.info("GET Event request received whit userId = {}, eventId = {}", userId, id);
-        if (!eventRepository.existsById(id)) {
-            log.error("Event not found for id = {}", id);
-            throw new NotFoundException("Event not found for id = " + id);
+    public EventFullDto getByIdAndInitiator(Long eventId, Long userId) {
+        log.info("GET Event request received whit userId = {}, eventId = {}", userId, eventId);
+        if (!eventRepository.existsById(eventId)) {
+            log.error("Event not found for id = {}", eventId);
+            throw new NotFoundException("Event not found for id = " + eventId);
         }
-        return EventMapper.toEventFullDto(eventRepository.findByInitiatorAndId(userRepository.getById(userId), id));
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found for id = {}", userId);
+            throw new NotFoundException("User not found for id = " + userId);
+        });
+        return EventMapper.toEventFullDto(eventRepository.findByInitiatorAndId(user, eventId));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public EventFullDto getById(Long id, HttpServletRequest request) {
         log.info("GET Event request received whit eventId = {}", id);
 
-        if (!eventRepository.existsById(id)) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
+        });
+
+        if (!event.getEventState().equals("PUBLISHED")) {
+            log.error("Published event not found for id = {}", id);
+            throw new NotFoundException("Published event not found for id = " + id);
         }
-        if (!eventRepository.getById(id).getEventState().equals("PUBLISHED")) {
-            log.error("Event not found for id = {}", id);
-            throw new NotFoundException("Event not found for id = " + id);
-        }
-        Event event = eventRepository.getById(id);
+        ;
 
         event.setViews(client.getViews(request.getRequestURI()).longValue());
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
+    @Override
     @Transactional
     public EventFullDto addNewEvent(NewEventDto dto, Long userId) {
         log.info("POST Event request received");
@@ -83,16 +93,17 @@ public class EventService {
             log.error("Category not found for id = {}", dto.getCategory());
             throw new NotFoundException("Category not found for id = " + dto.getCategory());
         });
+
         User user = userRepository.findById(userId).orElseThrow(() -> {
             log.error("User not found for id = {}", userId);
             throw new NotFoundException("User not found for id = " + userId);
         });
-        if (dto.getEventDate() != null) {
-            if (dto.getEventDate().isBefore(LocalDateTime.now())) {
-                log.error("Event date should be after current date");
-                throw new ValidationException("Event date should be after current date");
-            }
+
+        if (dto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
+            log.error("Event date should be no earlier than 2 hours later");
+            throw new ValidationException("Event date should be no earlier than 2 hours later");
         }
+
         if (dto.getPaid() == null) dto.setPaid(false);
         if (dto.getParticipantLimit() == null) dto.setParticipantLimit(0L);
         if (dto.getRequestModeration() == null) dto.setRequestModeration(true);
@@ -100,6 +111,7 @@ public class EventService {
                 locationRepository.save(dto.getLocation()))));
     }
 
+    @Override
     @Transactional
     public EventFullDto updateEvent(Long eventId, Long userId, UpdateEventRequest request) {
         log.info("PATCH Event request received for eventId = {}", eventId);
@@ -107,6 +119,7 @@ public class EventService {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
         });
+
         if (event.getEventState().equals("PUBLISHED")) {
             log.error("Current event was published");
             throw new Conflict("Current event was published");
@@ -125,19 +138,23 @@ public class EventService {
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
+    @Override
     @Transactional
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventRequest request) {
         log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
-        if (!eventRepository.existsById(eventId)) {
+
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
-        }
-        Event event = eventRepository.getById(eventId);
+        });
+
         if (request.getStateAction() != null && !event.getEventState().equals("PENDING")) {
             log.error("Event state is not PENDING");
             throw new Conflict("Event state is not PENDING");
         }
+
         updateToEventEntityMapper(request, event);
+
         if (request.getLocation() != null) {
             event.setLocation(locationRepository.save(request.getLocation()));
         }
@@ -152,6 +169,7 @@ public class EventService {
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
                                              LocalDateTime start, LocalDateTime end, Integer from, Integer size) {
@@ -165,6 +183,7 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String start,
                                          String end, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
@@ -193,11 +212,10 @@ public class EventService {
                             eventRepository.findById(shortEventDto.getId()).get().getParticipantLimit() == 0
             ).collect(Collectors.toList());
         }
-        if (!(sort.equals("EVENT_DATE") || sort.equals("VIEWS"))) {
+        if (!(sort.equals("EVENT_DATE") || sort.equals("VIEWS")))
             throw new ValidationException("Unallowed sorting method!");
-        }
-        return events.stream()
-                .sorted(sort.equals("EVENT_DATE") ?
+
+        return events.stream().sorted(sort.equals("EVENT_DATE") ?
                         Comparator.comparing(EventShortDto::getEventDate) :
                         Comparator.comparing(EventShortDto::getViews))
                 .collect(Collectors.toList());
@@ -212,9 +230,9 @@ public class EventService {
     private void updateToEventEntityMapper(UpdateEventRequest request, Event event) {
         if (request.getRequestModeration() != null) event.setRequestModeration(request.getRequestModeration());
         if (request.getEventDate() != null) {
-            if (request.getEventDate().isBefore(LocalDateTime.now())) {
-                log.error("Event date should be after current date");
-                throw new ValidationException("Event date should be after current date");
+            if (request.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
+                log.error("Event date should be no earlier than 2 hours later");
+                throw new ValidationException("Event date should be no earlier than 2 hours later");
             }
             event.setEventDate(request.getEventDate());
         }

@@ -11,8 +11,8 @@ import ru.practicum.exceptions.Conflict;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.mappers.UserMapper;
-import ru.practicum.models.User;
 import ru.practicum.repositories.UserRepository;
+import ru.practicum.services.interfaces.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,9 +20,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
+    @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAll(List<Long> ids, int from, int size) {
         log.info("GET Users request received");
@@ -39,6 +40,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional
     public UserDto save(NewUserRequest userCreateDto) {
         log.info("POST User request received");
@@ -46,16 +48,15 @@ public class UserService {
             log.error("Duplicate user name!");
             throw new Conflict("Duplicate user name!");
         }
-
         checkEmail(userCreateDto.getEmail());
-        User user = UserMapper.toUser(userCreateDto);
-        return UserMapper.toUserDto(userRepository.save(user));
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userCreateDto)));
     }
 
+    @Override
     @Transactional
     public void deleteById(Long userId) {
         log.info("DELETE user request received for id = {}", userId);
-        if (userRepository.getById(userId) == null) {
+        if (!userRepository.existsById(userId)) {
             log.warn("User not found for id = {}", userId);
             throw new NotFoundException("User not found for id = " + userId);
         }

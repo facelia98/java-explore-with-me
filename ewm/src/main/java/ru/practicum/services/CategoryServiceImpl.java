@@ -13,6 +13,7 @@ import ru.practicum.mappers.CategoryMapper;
 import ru.practicum.models.Category;
 import ru.practicum.repositories.CategoryRepository;
 import ru.practicum.repositories.EventRepository;
+import ru.practicum.services.interfaces.CategoryService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,10 +21,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CategoryService {
+public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
 
+    @Override
     @Transactional(readOnly = true)
     public List<CategoryDto> get(Integer from, Integer size) {
         log.info("GET Category request received to endpoint [/categories]");
@@ -33,16 +35,17 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public CategoryDto getById(Long id) {
         log.info("GET Category request received to endpoint [/categories] with id = {}", id);
-        if (!categoryRepository.existsById(id)) {
+        return CategoryMapper.toCategoryDto(categoryRepository.findById(id).orElseThrow(() -> {
             log.error("Category not found for id = {}", id);
             throw new NotFoundException("Category not found for id = " + id);
-        }
-        return CategoryMapper.toCategoryDto(categoryRepository.getById(id));
+        }));
     }
 
+    @Override
     @Transactional
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
         log.info("POST Category request received to endpoint [/categories]");
@@ -53,7 +56,7 @@ public class CategoryService {
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 
-
+    @Override
     @Transactional
     public void deleteById(Long id) {
         log.info("DELETE Category request received to endpoint [/categories] with id = {}", id);
@@ -64,6 +67,7 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
+    @Override
     @Transactional
     public CategoryDto updateById(Long id, CategoryDto dto) {
         log.info("PATCH Category request received to endpoint [/categories] with id = {}", id);

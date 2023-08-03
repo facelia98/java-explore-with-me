@@ -14,6 +14,7 @@ import ru.practicum.models.Compilation;
 import ru.practicum.models.Event;
 import ru.practicum.repositories.CompilationRepository;
 import ru.practicum.repositories.EventRepository;
+import ru.practicum.services.interfaces.CompilationService;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +24,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CompilationService {
+public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
 
-
+    @Override
     @Transactional(readOnly = true)
     public List<CompilationDto> get(Integer from, Integer size) {
         log.info("GET Compilations request received");
@@ -36,30 +37,35 @@ public class CompilationService {
                 .collect(Collectors.toList());
     }
 
-
+    @Override
     @Transactional(readOnly = true)
     public CompilationDto getById(Long id) {
         log.info("GET Compilation request received with id = {}", id);
-        if (!compilationRepository.existsById(id)) {
+        return CompilationMapper.toCompilationDto(compilationRepository.findById(id).orElseThrow(() -> {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Compilation not found for id = " + id);
+        }));
+    }
+
+    @Override
+    @Transactional
+    public void deleteCompilation(Long id) {
+        log.info("DELETE Compilation request received with id = {}", id);
+        if (!compilationRepository.existsById(id)) {
+            log.error("Compilation not found for id = {}", id);
+            throw new NotFoundException("Incorrect id");
         }
-        return CompilationMapper.toCompilationDto(compilationRepository.getById(id));
+        compilationRepository.deleteById(id);
     }
 
-
+    @Override
     @Transactional
-    public void deleteCompilation(Long compId) {
-        log.info("DELETE Compilation request received with id = {}", compId);
-        compilationRepository.findById(compId).orElseThrow(() ->
-                new NotFoundException("Incorrect id"));
-        compilationRepository.deleteById(compId);
-    }
-
-    @Transactional
-    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest compilationUpdateDto) {
-        log.info("PATCH Compilation request received with id = {}", compId);
-        Compilation compilationToUpdate = compilationRepository.getById(compId);
+    public CompilationDto updateCompilation(Long id, UpdateCompilationRequest compilationUpdateDto) {
+        log.info("PATCH Compilation request received with id = {}", id);
+        Compilation compilationToUpdate = compilationRepository.findById(id).orElseThrow(() -> {
+            log.error("Compilation not found for id = {}", id);
+            throw new NotFoundException("Compilation not found for id = " + id);
+        });
 
         if (compilationUpdateDto.getEvents() != null) {
             Set<Event> events = new HashSet<>();
@@ -68,6 +74,7 @@ public class CompilationService {
             }
             compilationToUpdate.setEvents(events);
         }
+
         compilationToUpdate.setPinned(compilationUpdateDto.getPinned() == null ?
                 compilationToUpdate.getPinned() : compilationUpdateDto.getPinned());
         compilationToUpdate.setTitle(compilationUpdateDto.getTitle() == null ?
@@ -76,7 +83,7 @@ public class CompilationService {
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilationToUpdate));
     }
 
-
+    @Override
     @Transactional
     public CompilationDto saveCompilation(NewCompilationDto compilationCreateDto) {
         log.info("POST Compilation request received");

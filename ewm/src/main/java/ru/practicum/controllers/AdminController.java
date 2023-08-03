@@ -14,10 +14,10 @@ import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
 import ru.practicum.dto.updates.UpdateEventRequest;
-import ru.practicum.services.CategoryService;
-import ru.practicum.services.CompilationService;
-import ru.practicum.services.EventService;
-import ru.practicum.services.UserService;
+import ru.practicum.services.interfaces.CategoryService;
+import ru.practicum.services.interfaces.CompilationService;
+import ru.practicum.services.interfaces.EventService;
+import ru.practicum.services.interfaces.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;

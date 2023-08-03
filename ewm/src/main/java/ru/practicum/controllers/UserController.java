@@ -11,8 +11,8 @@ import ru.practicum.dto.news.NewEventDto;
 import ru.practicum.dto.updates.UpdateEventRequest;
 import ru.practicum.models.EventRequestStatusUpdateRequest;
 import ru.practicum.models.EventRequestStatusUpdateResult;
-import ru.practicum.services.EventService;
-import ru.practicum.services.RequestService;
+import ru.practicum.services.interfaces.EventService;
+import ru.practicum.services.interfaces.RequestService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
