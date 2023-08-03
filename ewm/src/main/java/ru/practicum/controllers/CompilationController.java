@@ -20,10 +20,11 @@ public class CompilationController {
     private final CompilationService compilationService;
 
     @GetMapping
-    public List<CompilationDto> get(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+    public List<CompilationDto> get(@RequestParam(required = false) Boolean pinned,
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                     @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("GET Compilations request received to endpoint [/compilations]");
-        return compilationService.get(from, size);
+        return compilationService.get(pinned, from, size);
     }
 
     @GetMapping("/{compId}")

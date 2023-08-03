@@ -6,15 +6,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.dto.CategoryDto;
-import ru.practicum.dto.CompilationDto;
-import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.UserDto;
+import ru.practicum.dto.*;
 import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.news.NewUserRequest;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
 import ru.practicum.dto.updates.UpdateEventRequest;
+import ru.practicum.enums.Status;
 import ru.practicum.services.interfaces.CategoryService;
 import ru.practicum.services.interfaces.CompilationService;
 import ru.practicum.services.interfaces.EventService;
@@ -60,14 +58,15 @@ public class AdminController {
 
     @GetMapping("/events")
     public List<EventFullDto> getEventsAdmin(@RequestParam(name = "users", required = false) List<Long> users,
-                                             @RequestParam(name = "states", required = false) List<String> states,
+                                             @RequestParam(name = "states", required = false) List<Status> states,
                                              @RequestParam(name = "categories", required = false) List<Long> categories,
                                              @RequestParam(name = "rangeStart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
                                              @RequestParam(name = "rangeEnd", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                              @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                              @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         log.info("GET Events request received to admin endpoint [/events]");
-        return eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.getEventsAdmin(GetEventParametersDto.builder().rangeEnd(rangeEnd).rangeStart(rangeStart)
+                .categories(categories).states(states).users(users).from(from).size(size).build());
     }
 
     @PatchMapping("/events/{eventId}")

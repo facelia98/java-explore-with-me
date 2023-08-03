@@ -1,6 +1,7 @@
 package ru.practicum.models;
 
 import lombok.*;
+import ru.practicum.enums.Status;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,5 +24,6 @@ public class ParticipationRequest {
     @ManyToOne
     @JoinColumn(name = "requester_id")
     private User requester;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

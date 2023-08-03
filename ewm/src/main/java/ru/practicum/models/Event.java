@@ -1,6 +1,7 @@
 package ru.practicum.models;
 
 import lombok.*;
+import ru.practicum.enums.Status;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -42,8 +43,8 @@ public class Event {
     @Column(nullable = false)
     private Boolean requestModeration;
     @Column(name = "state")
-    private String eventState;
+    @Enumerated(EnumType.STRING)
+    private Status eventState;
     @Column(columnDefinition = "text", nullable = false)
     private String title;
-    private Long views;
 }

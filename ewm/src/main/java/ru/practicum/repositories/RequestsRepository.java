@@ -2,6 +2,7 @@ package ru.practicum.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.practicum.enums.Status;
 import ru.practicum.models.ParticipationRequest;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface RequestsRepository extends JpaRepository<ParticipationRequest, 
     List<ParticipationRequest> findAllByEvent_Id(Long eventId);
 
     @Query("select pr from ParticipationRequest pr where pr.status = :status and pr.event.id = :event")
-    List<ParticipationRequest> countParticipationRequests(Long event, String status);
+    List<ParticipationRequest> countParticipationRequests(Long event, Status status);
 
     List<ParticipationRequest> findAllByRequesterId(Long requestorId);
 

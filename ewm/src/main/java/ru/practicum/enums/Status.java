@@ -1,5 +1,5 @@
 package ru.practicum.enums;
 
 public enum Status {
-    PENDING, REJECTED, CONFIRMED, CANCELED
+    PENDING, REJECTED, CONFIRMED, CANCELED, PUBLISHED
 }

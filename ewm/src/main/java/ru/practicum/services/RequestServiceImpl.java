@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class RequestServiceImpl implements RequestService {
+
     private final RequestsRepository requestsRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
@@ -54,7 +55,7 @@ public class RequestServiceImpl implements RequestService {
         for (Long id : ids) {
 
             if (event.getParticipantLimit() != 0L) {
-                int count = requestsRepository.countParticipationRequests(eventId, "CONFIRMED").size();
+                int count = requestsRepository.countParticipationRequests(eventId, Status.CONFIRMED).size();
                 if (event.getParticipantLimit() <= count) {
                     throw new Conflict("Limit");
                 }
@@ -63,14 +64,14 @@ public class RequestServiceImpl implements RequestService {
             ParticipationRequest newrequest = requestsRepository.findByIdAndEvent_Id(id, eventId)
                     .orElseThrow(() -> new NotFoundException("PR not found"));
 
-            if (!newrequest.getStatus().equals("PENDING")) throw new Conflict("Conflict");
+            if (!newrequest.getStatus().equals(Status.PENDING)) throw new Conflict("Conflict");
 
             if (state.equals(Status.CONFIRMED)) {
-                newrequest.setStatus("CONFIRMED");
+                newrequest.setStatus(Status.CONFIRMED);
                 confirmedList.add(RequestMapper.toParticipationRequestDto(requestsRepository.save(newrequest)));
                 event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             } else {
-                newrequest.setStatus("REJECTED");
+                newrequest.setStatus(Status.REJECTED);
                 rejectedList.add(RequestMapper.toParticipationRequestDto(requestsRepository.save(newrequest)));
             }
         }
@@ -92,7 +93,7 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
         ParticipationRequest request = requestsRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new ValidationException("ParticipationRequest not found for pair userId-requestId"));
-        request.setStatus(Status.CANCELED.toString());
+        request.setStatus(Status.CANCELED);
         return RequestMapper.toParticipationRequestDto(requestsRepository.save(request));
     }
 
@@ -114,12 +115,12 @@ public class RequestServiceImpl implements RequestService {
         if (userId.equals(event.getInitiator().getId())) {
             throw new Conflict("Initiator couldn't send request");
         }
-        if (!event.getEventState().equals("PUBLISHED")) {
+        if (!event.getEventState().equals(Status.PUBLISHED)) {
             throw new Conflict("Unpublished event");
         }
         if (event.getParticipantLimit() != 0L) {
             int count = requestsRepository
-                    .countParticipationRequests(eventId, "CONFIRMED").size();
+                    .countParticipationRequests(eventId, Status.CONFIRMED).size();
             if (event.getParticipantLimit() <= count) {
                 throw new Conflict("Limit");
             }
@@ -131,9 +132,9 @@ public class RequestServiceImpl implements RequestService {
         request.setEvent(event);
 
         if (event.getRequestModeration() && event.getParticipantLimit() != 0L) {
-            request.setStatus("PENDING");
+            request.setStatus(Status.PENDING);
         } else {
-            request.setStatus("CONFIRMED");
+            request.setStatus(Status.CONFIRMED);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
         }

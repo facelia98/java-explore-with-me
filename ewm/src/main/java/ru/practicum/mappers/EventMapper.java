@@ -3,6 +3,7 @@ package ru.practicum.mappers;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewEventDto;
+import ru.practicum.enums.Status;
 import ru.practicum.models.Category;
 import ru.practicum.models.Event;
 import ru.practicum.models.Location;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class EventMapper {
-    public static EventFullDto toEventFullDto(Event event) {
+    public static EventFullDto toEventFullDto(Event event, Long views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -29,7 +30,7 @@ public class EventMapper {
                 .state(event.getEventState())
                 .requestModeration(event.getRequestModeration())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(views)
                 .build();
     }
 
@@ -45,15 +46,14 @@ public class EventMapper {
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
                 .publishedOn(LocalDateTime.now())
-                .eventState("PENDING")
+                .eventState(Status.PENDING)
                 .requestModeration(event.getRequestModeration())
                 .title(event.getTitle())
-                .views(event.getViews())
                 .confirmedRequests(0L)
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event) {
+    public static EventShortDto toEventShortDto(Event event, Long views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -63,7 +63,7 @@ public class EventMapper {
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(views)
                 .build();
     }
 }

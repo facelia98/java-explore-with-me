@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CompilationService {
 
-    List<CompilationDto> get(Integer from, Integer size);
+    List<CompilationDto> get(Boolean pinned, Integer from, Integer size);
 
     CompilationDto getById(Long id);
 

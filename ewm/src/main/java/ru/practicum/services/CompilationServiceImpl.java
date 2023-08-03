@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.client.ViewStatsClient;
 import ru.practicum.dto.CompilationDto;
+import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.mappers.CompilationMapper;
+import ru.practicum.mappers.EventMapper;
 import ru.practicum.models.Compilation;
 import ru.practicum.models.Event;
 import ru.practicum.repositories.CompilationRepository;
@@ -25,14 +28,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CompilationServiceImpl implements CompilationService {
+
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
+    private final ViewStatsClient statsClient;
 
     @Override
     @Transactional(readOnly = true)
-    public List<CompilationDto> get(Integer from, Integer size) {
+    public List<CompilationDto> get(Boolean pinned, Integer from, Integer size) {
+        if (pinned != null) {
+            return compilationRepository.findAll(PageRequest.of(from, size)).get()
+                    .filter(compilation -> compilation.getPinned().equals(pinned))
+                    .map(compilation -> CompilationMapper.toCompilationDto(compilation,
+                            compilation.getEvents().stream().map(this::toShortEventDtoWithViews).collect(Collectors.toList())))
+                    .collect(Collectors.toList());
+        }
         return compilationRepository.findAll(PageRequest.of(from, size)).get()
-                .map(CompilationMapper::toCompilationDto)
+                .map(compilation -> CompilationMapper.toCompilationDto(compilation,
+                        compilation.getEvents().stream().map(this::toShortEventDtoWithViews).collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +55,8 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.toCompilationDto(compilationRepository.findById(id).orElseThrow(() -> {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Compilation not found for id = " + id);
-        }));
+        }), compilationRepository.getById(id).getEvents()
+                .stream().map(this::toShortEventDtoWithViews).collect(Collectors.toList()));
     }
 
     @Override
@@ -76,7 +90,8 @@ public class CompilationServiceImpl implements CompilationService {
         compilationToUpdate.setTitle(compilationUpdateDto.getTitle() == null ?
                 compilationToUpdate.getTitle() : compilationUpdateDto.getTitle());
 
-        return CompilationMapper.toCompilationDto(compilationRepository.save(compilationToUpdate));
+        return CompilationMapper.toCompilationDto(compilationRepository.save(compilationToUpdate),
+                compilationToUpdate.getEvents().stream().map(this::toShortEventDtoWithViews).collect(Collectors.toList()));
     }
 
     @Override
@@ -85,6 +100,13 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = CompilationMapper.toCompilation(compilationCreateDto);
         Set<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
         compilation.setEvents(events);
-        return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
+        List<EventShortDto> eventShortDtos = events
+                .stream().map(this::toShortEventDtoWithViews)
+                .collect(Collectors.toList());
+        return CompilationMapper.toCompilationDto(compilationRepository.save(compilation), eventShortDtos);
+    }
+
+    private EventShortDto toShortEventDtoWithViews(Event event) {
+        return EventMapper.toEventShortDto(event, statsClient.getViews("/events/" + event.getId()).longValue());
     }
 }
