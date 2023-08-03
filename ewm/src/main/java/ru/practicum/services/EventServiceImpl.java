@@ -43,7 +43,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
-        log.info("GET Events request received");
         return eventRepository
                 .findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
                 .map(EventMapper::toEventShortDto)
@@ -53,7 +52,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public EventFullDto getByIdAndInitiator(Long eventId, Long userId) {
-        log.info("GET Event request received whit userId = {}, eventId = {}", userId, eventId);
         if (!eventRepository.existsById(eventId)) {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -68,8 +66,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public EventFullDto getById(Long id, HttpServletRequest request) {
-        log.info("GET Event request received whit eventId = {}", id);
-
         Event event = eventRepository.findById(id).orElseThrow(() -> {
             log.error("Event not found for id = {}", id);
             throw new NotFoundException("Event not found for id = " + id);
@@ -79,7 +75,6 @@ public class EventServiceImpl implements EventService {
             log.error("Published event not found for id = {}", id);
             throw new NotFoundException("Published event not found for id = " + id);
         }
-        ;
 
         event.setViews(client.getViews(request.getRequestURI()).longValue());
         return EventMapper.toEventFullDto(eventRepository.save(event));
@@ -88,7 +83,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto addNewEvent(NewEventDto dto, Long userId) {
-        log.info("POST Event request received");
         Category category = categoryRepository.findById(dto.getCategory()).orElseThrow(() -> {
             log.error("Category not found for id = {}", dto.getCategory());
             throw new NotFoundException("Category not found for id = " + dto.getCategory());
@@ -114,7 +108,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEvent(Long eventId, Long userId, UpdateEventRequest request) {
-        log.info("PATCH Event request received for eventId = {}", eventId);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -141,8 +134,6 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventRequest request) {
-        log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
-
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -173,7 +164,6 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
                                              LocalDateTime start, LocalDateTime end, Integer from, Integer size) {
-        log.info("GET Events request received from admin endpoint");
         List<Event> tmp = eventRepository.findAllForAdmin(users, states, categories, PageRequest.of(from / size, size));
         LocalDateTime st = start == null ? LocalDateTime.MIN : start;
         LocalDateTime en = end == null ? LocalDateTime.MAX : end;
@@ -187,8 +177,6 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<EventShortDto> getEvents(String text, List<Long> categoryIds, Boolean paid, String start,
                                          String end, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
-        log.info("GET Events request received");
-
         String t = text == null ? " " : text;
         if (start != null && end != null) {
             if (LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))

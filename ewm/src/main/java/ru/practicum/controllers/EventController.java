@@ -1,6 +1,7 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.client.ViewStatsClient;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/events")
 @Validated
 @RequiredArgsConstructor
+@Slf4j
 public class EventController {
     private final EventService eventService;
 
@@ -36,26 +38,26 @@ public class EventController {
                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                          @Positive @RequestParam(defaultValue = "10") int size,
                                          HttpServletRequest request) {
+        log.info("GET Events request received to endpoint [/events]");
         client.postHit(EndpointHitDto.builder()
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
                 .app("ewm-main-service")
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build());
-
         return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
                 sort, from, size, request);
     }
 
     @GetMapping("/{id}")
     public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request) {
+        log.info("GET Event request received to endpoint [/events] with eventId = {}", id);
         client.postHit(EndpointHitDto.builder()
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
                 .app("ewm-main-service")
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build());
-
         return eventService.getById(id, request);
     }
 }

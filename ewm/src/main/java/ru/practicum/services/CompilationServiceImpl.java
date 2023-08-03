@@ -31,7 +31,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional(readOnly = true)
     public List<CompilationDto> get(Integer from, Integer size) {
-        log.info("GET Compilations request received");
         return compilationRepository.findAll(PageRequest.of(from, size)).get()
                 .map(CompilationMapper::toCompilationDto)
                 .collect(Collectors.toList());
@@ -40,7 +39,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional(readOnly = true)
     public CompilationDto getById(Long id) {
-        log.info("GET Compilation request received with id = {}", id);
         return CompilationMapper.toCompilationDto(compilationRepository.findById(id).orElseThrow(() -> {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Compilation not found for id = " + id);
@@ -50,7 +48,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public void deleteCompilation(Long id) {
-        log.info("DELETE Compilation request received with id = {}", id);
         if (!compilationRepository.existsById(id)) {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Incorrect id");
@@ -61,7 +58,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto updateCompilation(Long id, UpdateCompilationRequest compilationUpdateDto) {
-        log.info("PATCH Compilation request received with id = {}", id);
         Compilation compilationToUpdate = compilationRepository.findById(id).orElseThrow(() -> {
             log.error("Compilation not found for id = {}", id);
             throw new NotFoundException("Compilation not found for id = " + id);
@@ -86,7 +82,6 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto saveCompilation(NewCompilationDto compilationCreateDto) {
-        log.info("POST Compilation request received");
         Compilation compilation = CompilationMapper.toCompilation(compilationCreateDto);
         Set<Event> events = eventRepository.findEventsByIds(compilationCreateDto.getEvents());
         compilation.setEvents(events);

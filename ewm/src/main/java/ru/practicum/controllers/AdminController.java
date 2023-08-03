@@ -1,6 +1,7 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import java.util.List;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AdminController {
     private final CategoryService categoryService;
     private final EventService eventService;
@@ -38,18 +40,21 @@ public class AdminController {
     @PostMapping("/categories")
     @ResponseStatus(value = HttpStatus.CREATED)
     public CategoryDto addNewCategory(@RequestBody @Valid NewCategoryDto dto) {
+        log.info("POST Category request received to admin endpoint [/categories]");
         return categoryService.addNewCategory(dto);
     }
 
     @DeleteMapping("/categories/{catId}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
+        log.info("DELETE Category request received to admin endpoint [/categories] with id = {}", catId);
         categoryService.deleteById(catId);
     }
 
     @PatchMapping("/categories/{catId}")
     public CategoryDto updateCategory(@PathVariable Long catId,
                                       @RequestBody @Valid CategoryDto dto) {
+        log.info("PATCH Category request received to admin endpoint [/categories] with id = {}", catId);
         return categoryService.updateById(catId, dto);
     }
 
@@ -61,12 +66,14 @@ public class AdminController {
                                              @RequestParam(name = "rangeEnd", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                              @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                              @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
+        log.info("GET Events request received to admin endpoint [/events]");
         return eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
     @PatchMapping("/events/{eventId}")
     EventFullDto update(@PathVariable Long eventId,
                         @Valid @RequestBody UpdateEventRequest updateEventRequest) {
+        log.info("PATCH Event request received to admin endpoint [/events] for eventId = {}", eventId);
         return eventService.updateEventByAdmin(eventId, updateEventRequest);
     }
 
@@ -74,35 +81,41 @@ public class AdminController {
     public List<UserDto> findAll(@RequestParam(required = false) List<Long> ids,
                                  @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                  @Positive @RequestParam(defaultValue = "10") int size) {
+        log.info("GET Users request received to admin endpoint [/users] for ids = {}", ids);
         return userService.findAll(ids, from, size);
     }
 
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping("/users")
     public UserDto save(@Valid @RequestBody NewUserRequest userCreateDto) {
+        log.info("POST User request received to admin endpoint [/users]");
         return userService.save(userCreateDto);
     }
 
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{userId}")
     public void delete(@PathVariable Long userId) {
+        log.info("DELETE User request received to admin endpoint [/users] for id = {}", userId);
         userService.deleteById(userId);
     }
 
     @PostMapping("/compilations")
     @ResponseStatus(value = HttpStatus.CREATED)
     public CompilationDto saveCompilation(@Valid @RequestBody NewCompilationDto compilationCreateDto) {
+        log.info("POST Compilation request received to admin endpoint [/compilations]");
         return compilationService.saveCompilation(compilationCreateDto);
     }
 
     @DeleteMapping("/compilations/{compId}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
+        log.info("DELETE Compilation request received to admin endpoint [/compilations] for id = {}", compId);
         compilationService.deleteCompilation(compId);
     }
 
     @PatchMapping("/compilations/{compId}")
     public CompilationDto updateCategory(@PathVariable Long compId, @RequestBody @Valid UpdateCompilationRequest compilationUpdateDto) {
+        log.info("PATCH Compilation request received to admin endpoint [/compilations] with id = {}", compId);
         return compilationService.updateCompilation(compId, compilationUpdateDto);
     }
 }

@@ -22,7 +22,6 @@ public class StatsService {
 
     @Transactional(readOnly = true)
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, Boolean unique, List<String> uris) {
-        log.info("GET ViewStat request received to endpoint [/stats]");
         if (end.isBefore(start) || start.isAfter(end)) {
             throw new ValidationException("Incoming date is invalid");
         }
@@ -35,13 +34,11 @@ public class StatsService {
 
     @Transactional(readOnly = true)
     public Integer getViews(String uri) {
-        log.info("GET views count request received to endpoint [/stats]");
         return statsRepository.findAllByUri(uri);
     }
 
     @Transactional
     public void create(EndpointHitDto endpointHitDto) {
-        log.info("POST EndpointHit request received to endpoint [/hit]");
         statsRepository.save(HitMapper.toHit(endpointHitDto));
     }
 }

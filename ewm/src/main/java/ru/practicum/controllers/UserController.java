@@ -1,6 +1,7 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class UserController {
 
     private final EventService eventService;
@@ -32,6 +34,7 @@ public class UserController {
     public List<EventShortDto> getEvents(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                          @Positive @RequestParam(name = "size", defaultValue = "10") Integer size,
                                          @PathVariable Long userId) {
+        log.info("GET Events request received to user endpoint with userId = {}", userId);
         return eventService.get(userId, from, size);
     }
 
@@ -39,12 +42,14 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public EventFullDto getEvents(@PathVariable Long userId,
                                   @Valid @RequestBody NewEventDto dto) {
+        log.info("POST Event request received to user endpoint with userId = {}", userId);
         return eventService.addNewEvent(dto, userId);
     }
 
     @GetMapping("/{userId}/events/{eventId}")
     public EventFullDto getEventById(@PathVariable Long userId,
                                      @PathVariable Long eventId) {
+        log.info("GET Event request received to user endpoint with userId = {}, eventId = {}", userId, eventId);
         return eventService.getByIdAndInitiator(eventId, userId);
     }
 
@@ -52,12 +57,14 @@ public class UserController {
     public EventFullDto updateEvent(@PathVariable Long userId,
                                     @PathVariable Long eventId,
                                     @RequestBody @Valid UpdateEventRequest request) {
+        log.info("PATCH Event request received to user endpoint with userId = {}, eventId = {}", userId, eventId);
         return eventService.updateEvent(eventId, userId, request);
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")
     public List<ParticipationRequestDto> getRequestsForUser(@PathVariable Long userId,
                                                             @PathVariable Long eventId) {
+        log.info("GET ParticipationRequest request received to user endpoint with userId = {}, eventId = {}", userId, eventId);
         return requestService.getRequestsForUser(userId, eventId);
     }
 
@@ -65,23 +72,27 @@ public class UserController {
     public EventRequestStatusUpdateResult requestStatusUpdate(@PathVariable Long userId,
                                                               @PathVariable Long eventId,
                                                               @RequestBody EventRequestStatusUpdateRequest request) {
+        log.info("PATCH ParticipationRequest request received to user endpoint with userId = {}, eventId = {}", userId, eventId);
         return requestService.requestStatusUpdate(userId, eventId, request);
     }
 
     @PostMapping("/{userId}/requests")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ParticipationRequestDto saveParticipationRequest(@PathVariable Long userId, @RequestParam Long eventId) {
+        log.info("POST ParticipationRequest request received to user endpoint with userId = {}, eventId = {}", userId, eventId);
         return requestService.saveParticipationRequest(userId, eventId);
     }
 
     @GetMapping("/{userId}/requests")
     public List<ParticipationRequestDto> getParticipationRequests(@PathVariable Long userId) {
+        log.info("GET ParticipationRequests request received to user endpoint with userId = {}", userId);
         return requestService.getParticipationRequests(userId);
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")
     public ParticipationRequestDto cancelParticipationRequest(@PathVariable Long userId,
                                                               @PathVariable Long requestId) {
+        log.info("PATCH CANCEL ParticipationRequest request received for requestId = {}, userId = {}", requestId, userId);
         return requestService.cancelParticipationRequest(userId, requestId);
     }
 

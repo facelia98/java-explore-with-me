@@ -32,7 +32,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getRequestsForUser(Long userId, Long eventId) {
-        log.info("GET ParticipationRequests request received for eventId = {}", eventId);
         return requestsRepository.findAllByEvent_Id(eventId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
@@ -42,7 +41,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public EventRequestStatusUpdateResult requestStatusUpdate(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
-        log.info("PATCH ParticipationRequest request received for eventId = {}", eventId);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
@@ -83,7 +81,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getParticipationRequests(Long userId) {
-        log.info("GET ParticipationRequest request received for userId = {}", userId);
         return requestsRepository.findAllByRequesterId(userId)
                 .stream()
                 .map(RequestMapper::toParticipationRequestDto)
@@ -93,7 +90,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
-        log.info("PATCH CANCEL ParticipationRequest request received for requestId = {}, userId = {}", requestId, userId);
         ParticipationRequest request = requestsRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new ValidationException("ParticipationRequest not found for pair userId-requestId"));
         request.setStatus(Status.CANCELED.toString());
@@ -103,7 +99,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
-        log.info("POST ParticipationRequest request received for eventId = {}, userId = {}", eventId, userId);
         List<ParticipationRequest> pr = requestsRepository.findByEventIdAndRequesterId(eventId, userId);
         if (!pr.isEmpty()) {
             throw new Conflict("Duplicate participation request");

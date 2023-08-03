@@ -26,7 +26,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAll(List<Long> ids, int from, int size) {
-        log.info("GET Users request received");
         if (ids == null || ids.isEmpty()) {
             return userRepository.findAll(PageRequest.of(from / size, size))
                     .stream()
@@ -43,7 +42,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto save(NewUserRequest userCreateDto) {
-        log.info("POST User request received");
         if (userRepository.getUserByName(userCreateDto.getName()) != null) {
             log.error("Duplicate user name!");
             throw new Conflict("Duplicate user name!");
@@ -55,7 +53,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteById(Long userId) {
-        log.info("DELETE user request received for id = {}", userId);
         if (!userRepository.existsById(userId)) {
             log.warn("User not found for id = {}", userId);
             throw new NotFoundException("User not found for id = " + userId);
