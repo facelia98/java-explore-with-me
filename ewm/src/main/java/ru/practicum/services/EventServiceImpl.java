@@ -48,7 +48,7 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
         List<EventShortDto> tmp = eventRepository
                 .findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
-                .map(event -> EventMapper.toEventShortDto(event, null))
+                .map(event -> EventMapper.toEventShortDto(event, 0L))
                 .collect(Collectors.toList());
         List<String> idsToViews = tmp.stream()
                 .map(eventShortDto -> "/events/" + eventShortDto.getId()).collect(Collectors.toList());
