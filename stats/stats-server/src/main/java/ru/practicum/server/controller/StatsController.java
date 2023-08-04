@@ -23,8 +23,8 @@ public class StatsController {
 
 
     @GetMapping("/views/list")
-    public Map<String, Long> getViews(@RequestParam(name = "uris", required = false) List<String> uris) {
-        log.info("GET views list count request received to endpoint [/stats]");
+    public Map<String, List<Long>> getViews(@RequestParam(name = "uris", required = false) List<String> uris) {
+        log.info("GET views list count request received to endpoint [/stats], uris = {}", uris);
         return statsService.getViewsList(uris);
     }
 

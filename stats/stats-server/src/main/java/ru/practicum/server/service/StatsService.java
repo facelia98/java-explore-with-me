@@ -44,7 +44,7 @@ public class StatsService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Long> getViewsList(List<String> uris) {
+    public Map<String, List<Long>> getViewsList(List<String> uris) {
         return statsRepository.findAllByUris(uris);
     }
 }
