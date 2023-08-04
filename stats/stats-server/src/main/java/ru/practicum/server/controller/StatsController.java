@@ -12,6 +12,7 @@ import ru.practicum.server.service.StatsService;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -20,6 +21,12 @@ import java.util.List;
 public class StatsController {
     private final StatsService statsService;
 
+
+    @GetMapping("/views/list")
+    public Map<String, Long> getViews(@RequestParam(name = "uris", required = false) List<String> uris) {
+        log.info("GET views list count request received to endpoint [/stats]");
+        return statsService.getViewsList(uris);
+    }
 
     @GetMapping("/views")
     public Integer getViews(@RequestParam(name = "uri", required = false) String uri) {

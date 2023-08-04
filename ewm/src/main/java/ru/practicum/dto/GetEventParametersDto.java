@@ -10,16 +10,16 @@ import java.util.List;
 @Builder
 @Getter
 public class GetEventParametersDto {
-    List<Long> users;
-    List<Status> states;
-    List<Long> categories;
-    LocalDateTime rangeStart;
-    LocalDateTime rangeEnd;
-    Integer from;
-    Integer size;
-    String text;
-    List<Long> categoryIds;
-    Boolean paid;
-    Boolean onlyAvailable;
-    String sort;
+    private List<Long> users;
+    private List<Status> states;
+    private List<Long> categories;
+    private LocalDateTime rangeStart;
+    private LocalDateTime rangeEnd;
+    private Integer from;
+    private Integer size;
+    private String text;
+    private List<Long> categoryIds;
+    private Boolean paid;
+    private Boolean onlyAvailable;
+    private String sort;
 }

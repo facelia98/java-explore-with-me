@@ -47,10 +47,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto addNewCategory(NewCategoryDto categoryDto) {
-        /*if (categoryRepository.findByName(categoryDto.getName()) != null) {
-            log.error("Duplicate category name!");
-            throw new Conflict("Duplicate category name!");
-        }*/
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(categoryDto)));
     }
 

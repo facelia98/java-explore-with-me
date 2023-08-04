@@ -4,9 +4,6 @@ import lombok.*;
 import ru.practicum.enums.Status;
 import ru.practicum.models.Location;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
 @Getter
 @Setter
 @Builder
@@ -25,7 +22,6 @@ public class EventFullDto {
     private Long participantLimit;
     private String publishedOn;
     private Boolean requestModeration;
-    @Enumerated(EnumType.STRING)
     private Status state;
     private String title;
     private Long views;

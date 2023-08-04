@@ -7,6 +7,7 @@ import ru.practicum.server.model.Hit;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface StatsRepository extends JpaRepository<Hit, Long> {
 
@@ -28,4 +29,7 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
 
     @Query("select count(distinct h.ip) from Hit as h where h.uri = :uri")
     Integer findAllByUri(String uri);
+
+    @Query("select h.uri, count(distinct h.ip) from Hit as h where h.uri IN :uris GROUP BY h.uri")
+    Map<String, Long> findAllByUris(List<String> uris);
 }

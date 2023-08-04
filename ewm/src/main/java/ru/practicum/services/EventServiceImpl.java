@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.practicum.enums.Status.*;
@@ -45,10 +46,15 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
-        return eventRepository
+        List<EventShortDto> tmp = eventRepository
                 .findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
-                .map(event -> EventMapper.toEventShortDto(event, client.getViews("/events/" + event.getId()).longValue()))
+                .map(event -> EventMapper.toEventShortDto(event, null))
                 .collect(Collectors.toList());
+        List<String> idsToViews = tmp.stream()
+                .map(eventShortDto -> "/events/" + eventShortDto.getId()).collect(Collectors.toList());
+        Map<String, Long> views = client.getViewsForList(idsToViews);
+        tmp.stream().forEach(eventShortDto -> eventShortDto.setViews(views.getOrDefault("/events/" + eventShortDto.getId(), 0L)));
+        return tmp;
     }
 
     @Override
@@ -164,14 +170,19 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventFullDto> getEventsAdmin(GetEventParametersDto dto) {
-        List<Event> tmp = eventRepository.findAllForAdmin(dto.getUsers(), dto.getStates(), dto.getCategories(),
+        List<Event> events = eventRepository.findAllForAdmin(dto.getUsers(), dto.getStates(), dto.getCategories(),
                 PageRequest.of(dto.getFrom() / dto.getSize(), dto.getSize()));
         LocalDateTime st = dto.getRangeStart() == null ? LocalDateTime.MIN : dto.getRangeStart();
         LocalDateTime en = dto.getRangeEnd() == null ? LocalDateTime.MAX : dto.getRangeEnd();
-        return tmp.stream()
+        List<EventFullDto> temp = events.stream()
                 .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
-                .map(event -> EventMapper.toEventFullDto(event, client.getViews("/events/" + event.getId()).longValue()))
+                .map(event -> EventMapper.toEventFullDto(event, null))
                 .collect(Collectors.toList());
+        List<String> idsToViews = temp.stream()
+                .map(eventFullDto -> "/events/" + eventFullDto.getId()).collect(Collectors.toList());
+        Map<String, Long> views = client.getViewsForList(idsToViews);
+        temp.stream().forEach(eventFullDto -> eventFullDto.setViews(views.getOrDefault("/events/" + eventFullDto.getId(), 0L)));
+        return temp;
     }
 
     @Override
@@ -190,8 +201,12 @@ public class EventServiceImpl implements EventService {
                         PageRequest.of(dto.getFrom() / dto.getSize(), dto.getSize()))
                 .stream()
                 .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
-                .map(event -> EventMapper.toEventShortDto(event, client.getViews("/events/" + event.getId()).longValue()))
+                .map(event -> EventMapper.toEventShortDto(event, 0L))
                 .map(this::setConfirmedRequests).collect(Collectors.toList());
+        List<String> idsToViews = events.stream()
+                .map(eventShortDto -> "/events/" + eventShortDto.getId()).collect(Collectors.toList());
+        Map<String, Long> views = client.getViewsForList(idsToViews);
+        events.stream().forEach(eventShortDto -> eventShortDto.setViews(views.getOrDefault("/events/" + eventShortDto.getId(), 0L)));
         if (dto.getOnlyAvailable()) {
             events = events.stream().filter(shortEventDto ->
                     shortEventDto.getConfirmedRequests() < eventRepository

@@ -12,6 +12,7 @@ import ru.practicum.server.repository.StatsRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +41,10 @@ public class StatsService {
     @Transactional
     public void create(EndpointHitDto endpointHitDto) {
         statsRepository.save(HitMapper.toHit(endpointHitDto));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getViewsList(List<String> uris) {
+        return statsRepository.findAllByUris(uris);
     }
 }

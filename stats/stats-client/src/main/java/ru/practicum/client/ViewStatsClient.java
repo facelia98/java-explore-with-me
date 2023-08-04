@@ -30,6 +30,13 @@ public class ViewStatsClient extends BaseClient {
         );
     }
 
+    public Map<String, Long> getViewsForList(List<String> uris) {
+        ResponseEntity<Map<String, Long>> serverResponse = rest.exchange("/views/list?uris={uris}",
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                }, uris);
+        return serverResponse.getBody();
+    }
+
     public Integer getViews(String uri) {
         ResponseEntity<Integer> serverResponse = rest.exchange("/views?uri={uri}",
                 HttpMethod.GET, null, new ParameterizedTypeReference<>() {
