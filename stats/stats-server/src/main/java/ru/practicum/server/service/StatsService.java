@@ -11,6 +11,7 @@ import ru.practicum.server.mapper.HitMapper;
 import ru.practicum.server.repository.StatsRepository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,13 @@ public class StatsService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<Long>> getViewsList(List<String> uris) {
-        return statsRepository.findAllByUris(uris);
+    public Map<String, Long> getViewsList(List<String> uris) {
+        Map<String, Long> result = new HashMap<>();
+        if (statsRepository.countByUris(uris) == 0) {
+            return result;
+        }
+        List<ViewsCount> p = statsRepository.findAllByUris(uris);
+        p.stream().forEach(viewsCount -> result.put(viewsCount.getName(), viewsCount.getCount()));
+        return result;
     }
 }
