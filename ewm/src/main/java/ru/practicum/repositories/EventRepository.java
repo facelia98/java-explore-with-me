@@ -8,6 +8,7 @@ import ru.practicum.enums.Status;
 import ru.practicum.models.Event;
 import ru.practicum.models.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -26,8 +27,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event AS e " +
             "WHERE ((:users) IS NULL OR e.initiator.id IN :users) " +
             "AND ((:states) IS NULL OR e.eventState IN :states) " +
-            "AND ((:categories) IS NULL OR e.category.id IN :categories)")
-    List<Event> findAllForAdmin(List<Long> users, List<Status> states, List<Long> categories, Pageable pageable);
+            "AND ((:categories) IS NULL OR e.category.id IN :categories)" +
+            "AND e.eventDate > :st AND e.eventDate < :end")
+    List<Event> findAllForAdmin(List<Long> users, List<Status> states, List<Long> categories, LocalDateTime st, LocalDateTime end, Pageable pageable);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE (lower(e.annotation) like lower(concat('%', :text, '%')) " +

@@ -30,6 +30,6 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
     @Query("select count(distinct h.ip) from Hit as h where h.uri = :uri")
     Integer findAllByUri(String uri);
 
-    @Query("select h.uri, count(distinct h.ip) from Hit as h where h.uri IN :uris GROUP BY h.uri")
+    @Query("select coalesce(h.uri, ''), coalesce(count(distinct h.ip), 0) from Hit as h where h.uri IN :uris GROUP BY h.uri")
     Map<String, Long> findAllByUris(List<String> uris);
 }

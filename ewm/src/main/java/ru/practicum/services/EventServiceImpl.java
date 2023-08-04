@@ -170,17 +170,17 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventFullDto> getEventsAdmin(GetEventParametersDto dto) {
-        List<Event> events = eventRepository.findAllForAdmin(dto.getUsers(), dto.getStates(), dto.getCategories(),
+        LocalDateTime st = dto.getRangeStart() == null ? LocalDateTime.of(1970, 1, 1, 0, 0) : dto.getRangeStart();
+        LocalDateTime en = dto.getRangeEnd() == null ? LocalDateTime.now().plusYears(30) : dto.getRangeEnd();
+        List<Event> events = eventRepository.findAllForAdmin(dto.getUsers(), dto.getStates(), dto.getCategories(), st, en,
                 PageRequest.of(dto.getFrom() / dto.getSize(), dto.getSize()));
-        LocalDateTime st = dto.getRangeStart() == null ? LocalDateTime.MIN : dto.getRangeStart();
-        LocalDateTime en = dto.getRangeEnd() == null ? LocalDateTime.MAX : dto.getRangeEnd();
-        List<EventFullDto> temp = events.stream()
-                .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
-                .map(event -> EventMapper.toEventFullDto(event, null))
-                .collect(Collectors.toList());
-        List<String> idsToViews = temp.stream()
-                .map(eventFullDto -> "/events/" + eventFullDto.getId()).collect(Collectors.toList());
+        List<String> idsToViews = events.stream()
+                .map(event -> "/events/" + event.getId()).collect(Collectors.toList());
         Map<String, Long> views = client.getViewsForList(idsToViews);
+
+        List<EventFullDto> temp = events.stream()
+                .map(event -> EventMapper.toEventFullDto(event, 0L))
+                .collect(Collectors.toList());
         temp.stream().forEach(eventFullDto -> eventFullDto.setViews(views.getOrDefault("/events/" + eventFullDto.getId(), 0L)));
         return temp;
     }
