@@ -7,16 +7,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class HitMapper {
-    public static EndpointHitDto toEndpointHitDto(Hit hit) {
-        return EndpointHitDto.builder()
-                .app(hit.getApp())
-                .ip(hit.getIp())
-                .id(hit.getId())
-                .timestamp(hit.getCreated().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .uri(hit.getUri())
-                .build();
-
-    }
 
     public static Hit toHit(EndpointHitDto endpointHitDto) {
         return Hit.builder()
