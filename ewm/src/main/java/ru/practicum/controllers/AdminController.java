@@ -10,13 +10,11 @@ import ru.practicum.dto.*;
 import ru.practicum.dto.news.NewCategoryDto;
 import ru.practicum.dto.news.NewCompilationDto;
 import ru.practicum.dto.news.NewUserRequest;
+import ru.practicum.dto.updates.UpdateCommentDto;
 import ru.practicum.dto.updates.UpdateCompilationRequest;
 import ru.practicum.dto.updates.UpdateEventRequest;
 import ru.practicum.enums.Status;
-import ru.practicum.services.interfaces.CategoryService;
-import ru.practicum.services.interfaces.CompilationService;
-import ru.practicum.services.interfaces.EventService;
-import ru.practicum.services.interfaces.UserService;
+import ru.practicum.services.interfaces.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -34,6 +32,7 @@ public class AdminController {
     private final EventService eventService;
     private final UserService userService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/categories")
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -116,5 +115,18 @@ public class AdminController {
     public CompilationDto updateCategory(@PathVariable Long compId, @RequestBody @Valid UpdateCompilationRequest compilationUpdateDto) {
         log.info("PATCH Compilation request received to admin endpoint [/compilations] with id = {}", compId);
         return compilationService.updateCompilation(compId, compilationUpdateDto);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long commentId) {
+        log.info("DELETE Comment request received to user endpoint with commentId = {}", commentId);
+        commentService.deleteCommentAdmin(commentId);
+    }
+
+    @PatchMapping("/comments/{commentId}")
+    public CommentShortDto updateComment(@PathVariable Long commentId, @RequestBody UpdateCommentDto dto) {
+        log.info("PATCH Comment request received to user endpoint with commentId = {}", commentId);
+        return commentService.updateComment(commentId, dto);
     }
 }

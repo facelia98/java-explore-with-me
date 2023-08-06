@@ -6,10 +6,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.client.ViewStatsClient;
-import ru.practicum.dto.EndpointHitDto;
-import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.GetEventParametersDto;
+import ru.practicum.dto.*;
+import ru.practicum.services.interfaces.CommentService;
 import ru.practicum.services.interfaces.EventService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,8 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class EventController {
-    private final EventService eventService;
 
+    private final EventService eventService;
+    private final CommentService commentService;
     private final ViewStatsClient client;
 
     @GetMapping
@@ -61,5 +60,13 @@ public class EventController {
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build());
         return eventService.getById(id, request);
+    }
+
+    @GetMapping("/events/{eventId}/comments")
+    public List<CommentShortDto> getCommentById(@PathVariable Long eventId,
+                                                @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                                @Positive @RequestParam(defaultValue = "10") int size) {
+        log.info("GET Comments request received to endpoint [/events] with eventId = {}", eventId);
+        return commentService.getCommentsByEvent(eventId, from, size);
     }
 }
