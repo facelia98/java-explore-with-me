@@ -62,7 +62,7 @@ public class EventController {
         return eventService.getById(id, request);
     }
 
-    @GetMapping("/events/{eventId}/comments")
+    @GetMapping("/{eventId}/comments")
     public List<CommentShortDto> getCommentById(@PathVariable Long eventId,
                                                 @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                                 @Positive @RequestParam(defaultValue = "10") int size) {

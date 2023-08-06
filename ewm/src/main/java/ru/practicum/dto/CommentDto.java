@@ -1,5 +1,6 @@
 package ru.practicum.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -17,4 +18,6 @@ public class CommentDto {
     private UserShortDto author;
     private EventShortDto event;
     private LocalDateTime created;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private LocalDateTime updated;
 }

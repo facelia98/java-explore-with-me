@@ -1,20 +1,24 @@
 {
 	"info": {
 		"_postman_id": "2ef045e5-9fed-4cb3-aacc-a3dff1f480a2",
-		"name": "Create User, Category, Event and Comment",
+		"name": "Test Explore With Me - Feature",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26755001"
 	},
 	"item": [
 		{
-			"name": "Create User",
+			"name": "Создание пользователя",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
+							"    pm.test(\"Код статуса - 201 Created\", function () {",
+							"        pm.response.to.have.status(201);",
+							"    });",
+							"",
 							"    const target = pm.response.json();",
-							"    pm.environment.set('uid', target.id);"
+							"    pm.collectionVariables.set('uid', target.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -46,14 +50,18 @@
 			"response": []
 		},
 		{
-			"name": "Create Category",
+			"name": "Создание категории",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
+							"    pm.test(\"Код статуса - 201 Created\", function () {",
+							"        pm.response.to.have.status(201);",
+							"    });",
+							"",
 							"    const target = pm.response.json();",
-							"    pm.environment.set('cid', target.id);"
+							"    pm.collectionVariables.set('cid', target.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -85,14 +93,18 @@
 			"response": []
 		},
 		{
-			"name": "Create Event",
+			"name": "Создание события",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
+							"    pm.test(\"Код статуса - 201 Created\", function () {",
+							"        pm.response.to.have.status(201);",
+							"    });",
+							"",
 							"    const target = pm.response.json();",
-							"    pm.environment.set('eid', target.id);"
+							"    pm.collectionVariables.set('eid', target.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -125,19 +137,18 @@
 			"response": []
 		},
 		{
-			"name": "Create Comment",
+			"name": "Проверка создания комментария",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"",
-							"    pm.test(\"Status code is 201 Created\", function () {",
+							"    pm.test(\"Код статуса - 201 Created\", function () {",
 							"        pm.response.to.have.status(201);",
 							"    });",
 							"",
-							"    const source = JSON.parse(pm.request.body.raw);",
 							"    const target = pm.response.json();",
+							"    pm.collectionVariables.set('comm_id', target.id);",
 							"",
 							"    pm.test(\"Комментарий должен содержать id\", function () {",
 							"        pm.expect(target.id).to.not.be.null;",
@@ -145,7 +156,7 @@
 							"",
 							"    pm.test(\"Возвращаемые параметры должны содержать не пустые значения или соответствовать переданным из запроса\", function () {",
 							"    pm.expect(target.id).to.not.be.null;",
-							"    pm.expect(target.comment_text).equal(source.comment_text, 'Текст комментария должен соответствовать тексту запроса');",
+							"    pm.expect(target.comment_text).equal('Комментарий', 'Текст комментария должен соответствовать тексту запроса');",
 							"    pm.expect(target.author).to.not.be.null;",
 							"    pm.expect(target.event).to.not.be.null;",
 							"    pm.expect(target.created).to.not.be.null;",
@@ -178,6 +189,398 @@
 						"events",
 						"{{eid}}",
 						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка get-эндпоинта",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать id и соответствовать полученному после добавления\", function () {\r",
+							"        pm.expect(target.id).eql(1);\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать текст и соответствовать сохраненному ранее\", function () {\r",
+							"        pm.expect(target.comment_text).eql('Комментарий');\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Добавленный комментарий не должен содержать данные об изменении\", function () {\r",
+							"        pm.expect(target).to.not.have.property('updated');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Изменение комментария администратором",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать id и соответствовать полученному после добавления\", function () {\r",
+							"        pm.expect(target.id).eql(1);\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать текст и соответствовать сохраненному ранее\", function () {\r",
+							"        pm.expect(target.comment_text).eql('Комментарий, измененный админом');\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Добавленный комментарий должен содержать данные об изменении\", function () {\r",
+							"        pm.expect(target).to.have.property('updated');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"newText\": \"Комментарий, измененный админом\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/admin/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"admin",
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Изменение комментария автором",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать id и соответствовать полученному после добавления\", function () {\r",
+							"        pm.expect(target.id).eql(1);\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать текст и соответствовать сохраненному ранее\", function () {\r",
+							"        pm.expect(target.comment_text).eql('Комментарий, измененный автором');\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Добавленный комментарий должен содержать данные об изменении\", function () {\r",
+							"        pm.expect(target).to.have.property('updated');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"newText\": \"Комментарий, измененный автором\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/{{uid}}/events/{{eid}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"{{uid}}",
+						"events",
+						"{{eid}}",
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Создание другого пользователя",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    const target = pm.response.json();",
+							"    pm.collectionVariables.set('uid', target.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Другой пользователь\",\n  \"email\": \"other@mail.ru\"\n}"
+				},
+				"url": {
+					"raw": "{{url}}/admin/users",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Изменение комментария другим пользователем",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса - 400 (изменение комментария другим пользователем запрещено)\", function () {\r",
+							"        pm.response.to.have.status(400);\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"newText\": \"Комментарий, измененный автором\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/{{uid}}/events/{{eid}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"{{uid}}",
+						"events",
+						"{{eid}}",
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Получение списка комментариев к событию",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать id и соответствовать полученному после добавления\", function () {\r",
+							"        pm.expect(target[0].id).eql(1);\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать текст и соответствовать сохраненному ранее\", function () {\r",
+							"        pm.expect(target[0].comment_text).eql('Комментарий, измененный автором');\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Добавленный комментарий должен содержать данные об изменении\", function () {\r",
+							"        pm.expect(target[0]).to.have.property('updated');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/events/{{eid}}/comments",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"events",
+						"{{eid}}",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление комментария другим пользователем",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 400 - запрещено удаление не автором\", function () {\r",
+							"        pm.response.to.have.status(400);\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/{{uid}}/events/{{eid}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"{{uid}}",
+						"events",
+						"{{eid}}",
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление комментария автором",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 204\", function () {\r",
+							"        pm.response.to.have.status(204);\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/1/events/{{eid}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"1",
+						"events",
+						"{{eid}}",
+						"comments",
+						"{{comm_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Удаление несуществующего комментария",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 404\", function () {\r",
+							"        pm.response.to.have.status(404);\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/1/events/{{eid}}/comments/{{comm_id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"1",
+						"events",
+						"{{eid}}",
+						"comments",
+						"{{comm_id}}"
 					]
 				}
 			},
@@ -224,6 +627,11 @@
 		{
 			"key": "currentDateTime",
 			"value": "{{currentDateTime}}"
+		},
+		{
+			"key": "comm_id",
+			"value": "1",
+			"type": "string"
 		}
 	]
 }
