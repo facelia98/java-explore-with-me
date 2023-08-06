@@ -1,6 +1,7 @@
 package ru.practicum.dto.news;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,5 +16,6 @@ public class NewCommentDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created;
     @NotBlank
-    private String comment_text;
+    @JsonProperty("comment_text")
+    private String commentText;
 }
