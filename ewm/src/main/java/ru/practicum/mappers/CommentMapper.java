@@ -15,7 +15,7 @@ public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment, EventShortDto event) {
         return CommentDto.builder()
                 .id(comment.getId())
-                .comment_text(comment.getComment())
+                .commentText(comment.getComment())
                 .author(UserMapper.toUserShortDto(comment.getAuthor()))
                 .created(comment.getCreated())
                 .event(event)
@@ -25,7 +25,7 @@ public class CommentMapper {
     public static CommentShortDto toCommentDto(Comment comment) {
         return CommentShortDto.builder()
                 .id(comment.getId())
-                .comment_text(comment.getComment())
+                .commentText(comment.getComment())
                 .author(UserMapper.toUserShortDto(comment.getAuthor()))
                 .created(comment.getCreated())
                 .build();
@@ -33,7 +33,7 @@ public class CommentMapper {
 
     public static Comment toComment(NewCommentDto dto, User author, Event event) {
         return Comment.builder()
-                .comment(dto.getComment_text())
+                .comment(dto.getCommentText())
                 .author(author)
                 .created(dto.getCreated() == null ? LocalDateTime.now() : dto.getCreated())
                 .event(event)
