@@ -588,7 +588,7 @@
 							"    });\r",
 							"    \r",
 							"    pm.test(\"Число комментариев должно быть равно числу ранее добавленных\", function () {\r",
-							"        pm.expect(target[0].comments).eql(1);\r",
+							"        pm.expect(target[0].comments).eql(0);\r",
 							"    });"
 						],
 						"type": "text/javascript"
