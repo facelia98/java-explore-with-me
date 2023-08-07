@@ -125,8 +125,8 @@ public class AdminController {
     }
 
     @PatchMapping("/comments/{commentId}")
-    public CommentShortDto updateComment(@PathVariable Long commentId, @RequestBody UpdateCommentDto dto) {
+    public CommentShortDto updateComment(@PathVariable Long commentId, @RequestBody @Valid UpdateCommentDto dto) {
         log.info("PATCH Comment request received to user endpoint with commentId = {}", commentId);
-        return commentService.updateComment(commentId, dto);
+        return commentService.updateCommentAdmin(commentId, dto);
     }
 }

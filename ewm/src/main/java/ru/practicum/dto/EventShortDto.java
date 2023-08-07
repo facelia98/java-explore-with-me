@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +21,5 @@ public class EventShortDto {
     private Boolean paid;
     private String title;
     private Long views;
-    private List<CommentShortDto> comments = new ArrayList<>();
+    private Long comments;
 }

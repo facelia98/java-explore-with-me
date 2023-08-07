@@ -10,4 +10,7 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("select c from Comment c where c.event.id = :id")
     List<Comment> findAllByEvent_Id(Long id, PageRequest request);
+
+    @Query("select c from Comment c where c.event.id = :id")
+    List<Comment> findAllByEvent_Id(Long id);
 }

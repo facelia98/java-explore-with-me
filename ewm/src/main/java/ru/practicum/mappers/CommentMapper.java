@@ -2,7 +2,6 @@ package ru.practicum.mappers;
 
 import ru.practicum.dto.CommentDto;
 import ru.practicum.dto.CommentShortDto;
-import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewCommentDto;
 import ru.practicum.models.Comment;
 import ru.practicum.models.Event;
@@ -12,18 +11,18 @@ import java.time.LocalDateTime;
 
 public class CommentMapper {
 
-    public static CommentDto toCommentDto(Comment comment, EventShortDto event) {
+    public static CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .commentText(comment.getComment())
                 .author(UserMapper.toUserShortDto(comment.getAuthor()))
                 .created(comment.getCreated())
                 .updated(comment.getUpdated())
-                .event(event)
+                .event(comment.getEvent().getId())
                 .build();
     }
 
-    public static CommentShortDto toCommentDto(Comment comment) {
+    public static CommentShortDto toCommentShortDto(Comment comment) {
         return CommentShortDto.builder()
                 .id(comment.getId())
                 .commentText(comment.getComment())

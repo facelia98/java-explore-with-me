@@ -8,14 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.ViewStatsClient;
 import ru.practicum.dto.CommentDto;
 import ru.practicum.dto.CommentShortDto;
-import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewCommentDto;
 import ru.practicum.dto.updates.UpdateCommentDto;
+import ru.practicum.enums.Status;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.mappers.CommentMapper;
-import ru.practicum.mappers.EventMapper;
 import ru.practicum.models.Comment;
+import ru.practicum.models.Event;
+import ru.practicum.models.User;
 import ru.practicum.repositories.CommentRepository;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.repositories.UserRepository;
@@ -41,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentShortDto> getCommentsByEvent(Long eventId, Integer from, Integer size) {
         return commentRepository
                 .findAllByEvent_Id(eventId, PageRequest.of(from, size)).stream()
-                .map(comment -> CommentMapper.toCommentDto(comment))
+                .map(comment -> CommentMapper.toCommentShortDto(comment))
                 .sorted(Comparator.comparing(CommentShortDto::getCreated))
                 .collect(Collectors.toList());
     }
@@ -49,68 +50,67 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentDto getById(Long commentId) {
-        return getCommentDto(commentId);
+        return CommentMapper.toCommentDto(getComment(commentId));
     }
 
     @Override
     @Transactional
     public void deleteCommentAdmin(Long commentId) {
-        commentRepository.findById(commentId).orElseThrow(() -> {
-            log.error("Comment not found for id = {}", commentId);
-            throw new NotFoundException("Comment not found for id = " + commentId);
-        });
+        getComment(commentId);
         commentRepository.deleteById(commentId);
     }
 
     @Override
     @Transactional
-    public CommentShortDto updateComment(Long commentId, UpdateCommentDto dto) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> {
-            log.error("Comment not found for id = {}", commentId);
-            throw new NotFoundException("Comment not found for id = " + commentId);
-        });
+    public CommentShortDto updateCommentAdmin(Long commentId, UpdateCommentDto dto) {
+        Comment comment = getComment(commentId);
         comment.setComment(dto.getNewText());
         comment.setUpdated(LocalDateTime.now());
-        return CommentMapper.toCommentDto(commentRepository.save(comment));
+        return CommentMapper.toCommentShortDto(commentRepository.save(comment));
     }
 
     @Override
     public CommentDto saveComment(Long userId, Long eventId, NewCommentDto dto) {
-        Comment c = commentRepository.save(CommentMapper.toComment(dto,
-                userRepository.getById(userId), eventRepository.getById(eventId)));
-        return getCommentDto(c.getId());
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            log.error("Event not found for id = {}", eventId);
+            throw new NotFoundException("Event not found for id = " + eventId);
+        });
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            log.error("User not found for id = {}", userId);
+            throw new NotFoundException("User not found for id = " + userId);
+        });
+        if (event.getEventState() != Status.PUBLISHED) {
+            log.error("Couldn't save comment to unpublished event");
+            throw new NotFoundException("Couldn't save comment to unpublished event");
+        }
+        return CommentMapper.toCommentDto(commentRepository.save(CommentMapper.toComment(dto, user, event)));
     }
 
     @Override
     public CommentShortDto updateCommentUser(Long commentId, Long userId, UpdateCommentDto dto) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> {
-            log.error("Comment not found for id = {}", commentId);
-            throw new NotFoundException("Comment not found for id = " + commentId);
-        });
+        Comment comment = getComment(commentId);
         if (!comment.getAuthor().getId().equals(userId)) {
             log.error("Unallowed action: the user cannot delete or update the comment of other users");
             throw new ValidationException("Unallowed action: the user cannot delete or update the comment of other users");
         }
         comment.setComment(dto.getNewText());
         comment.setUpdated(LocalDateTime.now());
-        return CommentMapper.toCommentDto(commentRepository.save(comment));
+        return CommentMapper.toCommentShortDto(commentRepository.save(comment));
     }
 
     @Override
     public void deleteCommentUser(Long commentId, Long userId) {
-        if (!getCommentDto(commentId).getAuthor().getId().equals(userId)) {
+        if (!getComment(commentId).getAuthor().getId().equals(userId)) {
             log.error("Unallowed action: the user cannot delete or update the comment of other users");
             throw new ValidationException("Unallowed action: the user cannot delete or update the comment of other users");
         }
         commentRepository.deleteById(commentId);
     }
 
-    private CommentDto getCommentDto(Long id) {
-        Comment comment = commentRepository.findById(id).orElseThrow(() -> {
+    private Comment getComment(Long id) {
+        return commentRepository.findById(id).orElseThrow(() -> {
             log.error("Comment not found for id = {}", id);
             throw new NotFoundException("Comment not found for id = " + id);
         });
-        EventShortDto dto = EventMapper.toEventShortDto(comment.getEvent(), viewStatsClient.getViews("/events/" + comment.getEvent().getId()).longValue());
-        return CommentMapper.toCommentDto(comment, dto);
     }
 }

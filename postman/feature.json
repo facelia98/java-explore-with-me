@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2ef045e5-9fed-4cb3-aacc-a3dff1f480a2",
+		"_postman_id": "0e556c2e-abbe-4b3b-92ca-b9e110d1dd90",
 		"name": "Test Explore With Me - Feature",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "26755001"
@@ -120,7 +120,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"annotation\": \"Аннотация.......................................\",\n  \"category\": {{cid}},\n  \"description\": \"Описание........................................\",\n  \"location\": {\n    \"lat\": 0,\n    \"lon\": 0\n  },\n  \"eventDate\": \"2023-08-07 11:49:42\",\n  \"participantLimit\": 0,\n  \"requestModeration\": false,\n  \"paid\": false,\n  \"title\": \"Название............................................\"\n}"
+					"raw": "{\n  \"annotation\": \"Аннотация ......................................\",\n  \"category\": {{cid}},\n  \"description\": \"Описание .......................................\",\n  \"location\": {\n    \"lat\": 0,\n    \"lon\": 0\n  },\n  \"eventDate\": \"2024-08-10 11:49:42\",\n  \"participantLimit\": 0,\n  \"requestModeration\": false,\n  \"paid\": false,\n  \"title\": \"Название ...........................................\"\n}"
 				},
 				"url": {
 					"raw": "{{url}}/users/{{uid}}/events",
@@ -131,6 +131,53 @@
 						"users",
 						"{{uid}}",
 						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Публикация события",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Событие должно быть опубликовано\", function () {\r",
+							"        pm.expect(target.state).eql('PUBLISHED');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"stateAction\": \"PUBLISH_EVENT\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/admin/events/{{eid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						"{{eid}}"
 					]
 				}
 			},
@@ -436,6 +483,48 @@
 			"response": []
 		},
 		{
+			"name": "Получение события со списком комментариев",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Событие должно содержать поле comments == not null\", function () {\r",
+							"        pm.expect(target.comments).to.not.be.null;\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Событие должно содержать ранее добавленный комментарий\", function () {\r",
+							"        pm.expect(target.comments[0].id).eql(1);\r",
+							"        pm.expect(target.comments[0].comment_text).eql('Комментарий, измененный автором');\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/events/{{eid}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"events",
+						"{{eid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Получение списка комментариев к событию",
 			"event": [
 				{
@@ -476,6 +565,46 @@
 						"events",
 						"{{eid}}",
 						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Получение списка событий с проверкой числа комментариев",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    pm.test(\"Код статуса 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    const target = pm.response.json();\r",
+							"    \r",
+							"    pm.test(\"Комментарий должен содержать id и соответствовать полученному после добавления\", function () {\r",
+							"        pm.expect(target[0].comments).to.not.be.null;\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Число комментариев должно быть равно числу ранее добавленных\", function () {\r",
+							"        pm.expect(target[0].comments).eql(1);\r",
+							"    });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/events",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"events"
 					]
 				}
 			},

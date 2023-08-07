@@ -16,7 +16,7 @@ public class CommentDto {
     @JsonProperty("comment_text")
     private String commentText;
     private UserShortDto author;
-    private EventShortDto event;
+    private Long event;
     private LocalDateTime created;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private LocalDateTime updated;

@@ -63,9 +63,9 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}/comments")
-    public List<CommentShortDto> getCommentById(@PathVariable Long eventId,
-                                                @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                @Positive @RequestParam(defaultValue = "10") int size) {
+    public List<CommentShortDto> getCommentListByEventId(@PathVariable Long eventId,
+                                                         @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                                         @Positive @RequestParam(defaultValue = "10") int size) {
         log.info("GET Comments request received to endpoint [/events] with eventId = {}", eventId);
         return commentService.getCommentsByEvent(eventId, from, size);
     }

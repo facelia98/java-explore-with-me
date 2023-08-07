@@ -102,7 +102,7 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public CommentDto saveComment(@PathVariable Long userId,
                                   @PathVariable Long eventId,
-                                  @RequestBody NewCommentDto dto) {
+                                  @RequestBody @Valid NewCommentDto dto) {
         log.info("POST Comment request received to user endpoint with eventId = {}, userId = {}", eventId, userId);
         return commentService.saveComment(userId, eventId, dto);
     }
@@ -110,7 +110,7 @@ public class UserController {
     @PatchMapping("/{userId}/events/{eventId}/comments/{commentId}")
     public CommentShortDto updateComment(@PathVariable Long commentId,
                                          @PathVariable Long userId,
-                                         @RequestBody UpdateCommentDto commentDto) {
+                                         @RequestBody @Valid UpdateCommentDto commentDto) {
         log.info("PATCH Comment request received to user endpoint with commentId = {}, userId = {}", commentId, userId);
         return commentService.updateCommentUser(commentId, userId, commentDto);
     }
