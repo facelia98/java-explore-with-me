@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.ViewStatsClient;
 import ru.practicum.dto.CommentDto;
 import ru.practicum.dto.CommentShortDto;
 import ru.practicum.dto.news.NewCommentDto;
@@ -35,7 +34,6 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final ViewStatsClient viewStatsClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto saveComment(Long userId, Long eventId, NewCommentDto dto) {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+        Event event = eventRepository.findEventByIdAndStatus(eventId, Status.PUBLISHED).orElseThrow(() -> {
             log.error("Event not found for id = {}", eventId);
             throw new NotFoundException("Event not found for id = " + eventId);
         });
@@ -79,10 +77,6 @@ public class CommentServiceImpl implements CommentService {
             log.error("User not found for id = {}", userId);
             throw new NotFoundException("User not found for id = " + userId);
         });
-        if (event.getEventState() != Status.PUBLISHED) {
-            log.error("Couldn't save comment to unpublished event");
-            throw new NotFoundException("Couldn't save comment to unpublished event");
-        }
         return CommentMapper.toCommentDto(commentRepository.save(CommentMapper.toComment(dto, user, event)));
     }
 

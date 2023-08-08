@@ -10,10 +10,15 @@ import ru.practicum.models.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByInitiatorId(Long userId, PageRequest pageRequest);
+
+    @Query("SELECT e FROM Event AS e " +
+            "WHERE e.id = :id AND e.eventState = :status")
+    Optional<Event> findEventByIdAndStatus(Long id, Status status);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE e.id IN :events " +

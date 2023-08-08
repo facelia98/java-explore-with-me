@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.client.ViewStatsClient;
+import ru.practicum.dto.CommentShortDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.GetEventParametersDto;
@@ -50,7 +51,7 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> get(Long userId, Integer from, Integer size) {
         List<EventShortDto> tmp = eventRepository
                 .findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
-                .map(event -> EventMapper.toEventShortDto(event, 0L, (long) commentRepository.findAllByEvent_Id(event.getId()).size()))
+                .map(event -> EventMapper.toEventShortDto(event, 0L, (long) getCommentListForEvent(event.getId()).size()))
                 .collect(Collectors.toList());
         List<String> idsToViews = tmp.stream()
                 .map(eventShortDto -> "/events/" + eventShortDto.getId()).collect(Collectors.toList());
@@ -71,9 +72,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("User not found for id = " + userId);
         });
         return EventMapper.toEventFullDto(eventRepository.findByInitiatorAndId(user, eventId),
-                client.getViews("/events/" + eventId).longValue(),
-                commentRepository.findAllByEvent_Id(eventId)
-                        .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList()));
+                client.getViews("/events/" + eventId).longValue(), getCommentListForEvent(eventId));
     }
 
     @Override
@@ -90,9 +89,7 @@ public class EventServiceImpl implements EventService {
         }
 
         return EventMapper.toEventFullDto(eventRepository.save(event),
-                client.getViews("/events/" + event.getId()).longValue(),
-                commentRepository.findAllByEvent_Id(id)
-                        .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList()));
+                client.getViews("/events/" + event.getId()).longValue(), getCommentListForEvent(id));
     }
 
     @Override
@@ -145,8 +142,7 @@ public class EventServiceImpl implements EventService {
         }
         return EventMapper.toEventFullDto(eventRepository.save(event),
                 client.getViews("/events/" + eventId).longValue(),
-                commentRepository.findAllByEvent_Id(eventId)
-                        .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList()));
+                getCommentListForEvent(eventId));
     }
 
     @Override
@@ -177,8 +173,7 @@ public class EventServiceImpl implements EventService {
 
         return EventMapper.toEventFullDto(eventRepository.save(event),
                 client.getViews("/events/" + eventId).longValue(),
-                commentRepository.findAllByEvent_Id(eventId)
-                        .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList()));
+                getCommentListForEvent(eventId));
     }
 
     @Override
@@ -193,9 +188,7 @@ public class EventServiceImpl implements EventService {
         Map<String, Long> views = client.getViewsForList(idsToViews);
 
         List<EventFullDto> temp = events.stream()
-                .map(event -> EventMapper.toEventFullDto(event, 0L,
-                        commentRepository.findAllByEvent_Id(event.getId())
-                                .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList())))
+                .map(event -> EventMapper.toEventFullDto(event, 0L, getCommentListForEvent(event.getId())))
                 .collect(Collectors.toList());
         temp.stream().forEach(eventFullDto -> eventFullDto.setViews(views.getOrDefault("/events/" + eventFullDto.getId(), 0L)));
         return temp;
@@ -218,7 +211,7 @@ public class EventServiceImpl implements EventService {
                 .stream()
                 .filter(event -> event.getEventDate().isAfter(st) && event.getEventDate().isBefore(en))
                 .map(event -> EventMapper.toEventShortDto(event, 0L,
-                        (long) commentRepository.findAllByEvent_Id(event.getId()).size()))
+                        (long) getCommentListForEvent(event.getId()).size()))
                 .map(this::setConfirmedRequests).collect(Collectors.toList());
         List<String> idsToViews = events.stream()
                 .map(eventShortDto -> "/events/" + eventShortDto.getId()).collect(Collectors.toList());
@@ -261,5 +254,10 @@ public class EventServiceImpl implements EventService {
         if (request.getPaid() != null) event.setPaid(request.getPaid());
         if (request.getTitle() != null) event.setTitle(request.getTitle());
         if (request.getParticipantLimit() != null) event.setParticipantLimit(request.getParticipantLimit());
+    }
+
+    private List<CommentShortDto> getCommentListForEvent(Long eventId) {
+        return commentRepository.findAllByEvent_Id(eventId)
+                .stream().map(CommentMapper::toCommentShortDto).collect(Collectors.toList());
     }
 }
