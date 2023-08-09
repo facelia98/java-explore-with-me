@@ -1,5 +1,6 @@
 package ru.practicum.mappers;
 
+import ru.practicum.dto.CommentShortDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.news.NewEventDto;
@@ -11,9 +12,11 @@ import ru.practicum.models.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventMapper {
-    public static EventFullDto toEventFullDto(Event event, Long views) {
+    public static EventFullDto toEventFullDto(Event event, Long views, List<CommentShortDto> comments) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -31,6 +34,7 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .title(event.getTitle())
                 .views(views)
+                .comments(comments == null ? new ArrayList<>() : comments)
                 .build();
     }
 
@@ -53,7 +57,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, Long views) {
+    public static EventShortDto toEventShortDto(Event event, Long views, Long comments) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -64,6 +68,7 @@ public class EventMapper {
                 .paid(event.getPaid())
                 .title(event.getTitle())
                 .views(views)
+                .comments(comments)
                 .build();
     }
 }

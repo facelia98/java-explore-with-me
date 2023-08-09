@@ -15,6 +15,7 @@ import ru.practicum.mappers.CompilationMapper;
 import ru.practicum.mappers.EventMapper;
 import ru.practicum.models.Compilation;
 import ru.practicum.models.Event;
+import ru.practicum.repositories.CommentRepository;
 import ru.practicum.repositories.CompilationRepository;
 import ru.practicum.repositories.EventRepository;
 import ru.practicum.services.interfaces.CompilationService;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
+    private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
     private final ViewStatsClient statsClient;
 
@@ -107,6 +109,8 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private EventShortDto toShortEventDtoWithViews(Event event) {
-        return EventMapper.toEventShortDto(event, statsClient.getViews("/events/" + event.getId()).longValue());
+        return EventMapper.toEventShortDto(event,
+                statsClient.getViews("/events/" + event.getId()).longValue(),
+                (long) commentRepository.findAllByEvent_Id(event.getId()).size());
     }
 }

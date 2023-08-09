@@ -4,6 +4,9 @@ import lombok.*;
 import ru.practicum.enums.Status;
 import ru.practicum.models.Location;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -26,4 +29,5 @@ public class EventFullDto {
     private String title;
     private Long views;
     private Long confirmedRequests;
+    private List<CommentShortDto> comments = new ArrayList<>();
 }

@@ -5,13 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.ParticipationRequestDto;
+import ru.practicum.dto.*;
+import ru.practicum.dto.news.NewCommentDto;
 import ru.practicum.dto.news.NewEventDto;
+import ru.practicum.dto.updates.UpdateCommentDto;
 import ru.practicum.dto.updates.UpdateEventRequest;
 import ru.practicum.models.EventRequestStatusUpdateRequest;
 import ru.practicum.models.EventRequestStatusUpdateResult;
+import ru.practicum.services.interfaces.CommentService;
 import ru.practicum.services.interfaces.EventService;
 import ru.practicum.services.interfaces.RequestService;
 
@@ -29,6 +30,7 @@ public class UserController {
 
     private final EventService eventService;
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping("/{userId}/events")
     public List<EventShortDto> getEvents(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
@@ -96,4 +98,34 @@ public class UserController {
         return requestService.cancelParticipationRequest(userId, requestId);
     }
 
+    @PostMapping("/{userId}/events/{eventId}/comments")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public CommentDto saveComment(@PathVariable Long userId,
+                                  @PathVariable Long eventId,
+                                  @RequestBody @Valid NewCommentDto dto) {
+        log.info("POST Comment request received to user endpoint with eventId = {}, userId = {}", eventId, userId);
+        return commentService.saveComment(userId, eventId, dto);
+    }
+
+    @PatchMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public CommentShortDto updateComment(@PathVariable Long commentId,
+                                         @PathVariable Long userId,
+                                         @RequestBody @Valid UpdateCommentDto commentDto) {
+        log.info("PATCH Comment request received to user endpoint with commentId = {}, userId = {}", commentId, userId);
+        return commentService.updateCommentUser(commentId, userId, commentDto);
+    }
+
+    @DeleteMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void userDeleteComment(@PathVariable Long userId,
+                                  @PathVariable Long commentId) {
+        log.info("DELETE Comment request received to user endpoint with commentId = {}, userId = {}", commentId, userId);
+        commentService.deleteCommentUser(commentId, userId);
+    }
+
+    @GetMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public CommentDto getCommentById(@PathVariable Long commentId) {
+        log.info("GET Comments request received to user endpoint with eventId = {}", commentId);
+        return commentService.getById(commentId);
+    }
 }
